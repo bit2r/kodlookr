@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Choonghyun Ryu" />
+
+<meta name="date" content="2021-08-01" />
+
+<title>Introduce dlookr</title>
+
+<script src="data:application/javascript;base64,Ly8gUGFuZG9jIDIuOSBhZGRzIGF0dHJpYnV0ZXMgb24gYm90aCBoZWFkZXIgYW5kIGRpdi4gV2UgcmVtb3ZlIHRoZSBmb3JtZXIgKHRvCi8vIGJlIGNvbXBhdGlibGUgd2l0aCB0aGUgYmVoYXZpb3Igb2YgUGFuZG9jIDwgMi44KS4KZG9jdW1lbnQuYWRkRXZlbnRMaXN0ZW5lcignRE9NQ29udGVudExvYWRlZCcsIGZ1bmN0aW9uKGUpIHsKICB2YXIgaHMgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yQWxsKCJkaXYuc2VjdGlvbltjbGFzcyo9J2xldmVsJ10gPiA6Zmlyc3QtY2hpbGQiKTsKICB2YXIgaSwgaCwgYTsKICBmb3IgKGkgPSAwOyBpIDwgaHMubGVuZ3RoOyBpKyspIHsKICAgIGggPSBoc1tpXTsKICAgIGlmICghL15oWzEtNl0kL2kudGVzdChoLnRhZ05hbWUpKSBjb250aW51ZTsgIC8vIGl0IHNob3VsZCBiZSBhIGhlYWRlciBoMS1oNgogICAgYSA9IGguYXR0cmlidXRlczsKICAgIHdoaWxlIChhLmxlbmd0aCA+IDApIGgucmVtb3ZlQXR0cmlidXRlKGFbMF0ubmFtZSk7CiAgfQp9KTsK"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+
+
+
+
+<link rel="stylesheet" href="data:text/css,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" type="text/css" />
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Introduce dlookr</h1>
+<h4 class="author">Choonghyun Ryu</h4>
+<h4 class="date">2021-08-01</h4>
+
+
+
+<div id="preface" class="section level2">
+<h2>Preface</h2>
+<p>After you have acquired the data, you should do the following:</p>
+<ul>
+<li>Diagnose data quality.
+<ul>
+<li>If there is a problem with data quality,</li>
+<li>The data must be corrected or re-acquired.</li>
+</ul></li>
+<li>Explore data to understand the data and find scenarios for performing the analysis.</li>
+<li>Derive new variables or perform variable transformations.</li>
+</ul>
+<p>The dlookr package makes these steps fast and easy:</p>
+<ul>
+<li>Performs a data diagnosis or automatically generates a data diagnosis report.</li>
+<li>Discover data in a variety of ways, and automatically generate EDA(exploratory data analysis) report.</li>
+<li>Impute missing values and outliers, resolve skewed data, and binaries continuous variables into categorical variables. And generates an automated report to support it.</li>
+</ul>
+<p>dlookr increases synergy with <code>dplyr</code>. Particularly in data exploration and data wrangle, it increases the efficiency of the <code>tidyverse</code> package group.</p>
+</div>
+<div id="supported-data-structures" class="section level2">
+<h2>Supported data structures</h2>
+<p>Data diagnosis supports the following data structures.</p>
+<ul>
+<li>data frame : data.frame class.</li>
+<li>data table : tbl_df class.</li>
+<li>table of DBMS : table of the DBMS through tbl_dbi.
+<ul>
+<li>Use dplyr as the back-end interface for any DBI-compatible database.</li>
+</ul></li>
+</ul>
+</div>
+<div id="list-of-supported-tasks-of-data-analytics" class="section level2">
+<h2>List of supported tasks of data analytics</h2>
+<div id="diagnose-data" class="section level3">
+<h3>Diagnose Data</h3>
+<div id="overall-diagnose-data" class="section level4">
+<h4>Overall Diagnose Data</h4>
+<table>
+<colgroup>
+<col width="25%" />
+<col width="37%" />
+<col width="16%" />
+<col width="20%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Tasks</th>
+<th align="left">Descriptions</th>
+<th align="left">Functions</th>
+<th align="center">Support DBI</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">describe overview of data</td>
+<td align="left">Inquire basic information to understand the data in general</td>
+<td align="left"><code>overview()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="even">
+<td align="left">summary overview object</td>
+<td align="left">summary described overview of data</td>
+<td align="left"><code>summary.overview()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="odd">
+<td align="left">plot overview object</td>
+<td align="left">plot described overview of data</td>
+<td align="left"><code>plot.overview()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="even">
+<td align="left">diagnose data quality of variables</td>
+<td align="left">The scope of data quality diagnosis is information on missing values and unique value information</td>
+<td align="left"><code>diagnose()</code></td>
+<td align="center">x</td>
+</tr>
+<tr class="odd">
+<td align="left">diagnose data quality of categorical variables</td>
+<td align="left">frequency, ratio, rank by levels of each variables</td>
+<td align="left"><code>diagnose_category()</code></td>
+<td align="center">x</td>
+</tr>
+<tr class="even">
+<td align="left">diagnose data quality of numerical variables</td>
+<td align="left">descriptive statistics, number of zero, minus, outliers</td>
+<td align="left"><code>diagnose_numeric()</code></td>
+<td align="center">x</td>
+</tr>
+<tr class="odd">
+<td align="left">diagnose data quality for outlier</td>
+<td align="left">number of outliers, ratio, mean of outliers, mean with outliers, mean without outliers</td>
+<td align="left"><code>diagnose_outlier()</code></td>
+<td align="center">x</td>
+</tr>
+<tr class="even">
+<td align="left">plot outliers information of numerical data</td>
+<td align="left">box plot and histogram whith outliers, without outliers</td>
+<td align="left"><code>plot_outlier.data.frame()</code></td>
+<td align="center">x</td>
+</tr>
+<tr class="odd">
+<td align="left">plot outliers information of numerical data by target variable</td>
+<td align="left">box plot and density plot whith outliers, without outliers</td>
+<td align="left"><code>plot_outlier.target_df()</code></td>
+<td align="center">x</td>
+</tr>
+<tr class="even">
+<td align="left">diagnose combination of categorical variables</td>
+<td align="left">Check for sparse cases of level combinations of categorical variables</td>
+<td align="left"><code>diagnose_sparese()</code></td>
+<td align="center"></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="visualize-missing-values" class="section level4">
+<h4>Visualize Missing Values</h4>
+<table>
+<colgroup>
+<col width="25%" />
+<col width="37%" />
+<col width="16%" />
+<col width="20%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Tasks</th>
+<th align="left">Descriptions</th>
+<th align="left">Functions</th>
+<th align="center">Support DBI</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">pareto chart for missing value</td>
+<td align="left">visualize pareto chart for variables with missing value.</td>
+<td align="left"><code>plot_na_pareto()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="even">
+<td align="left">combination chart for missing value</td>
+<td align="left">visualize distribution of missing value by combination of variables.</td>
+<td align="left"><code>plot_na_hclust()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="odd">
+<td align="left">plot the combination variables that is include missing value</td>
+<td align="left">visualize the combinations of missing value across cases..</td>
+<td align="left"><code>plot_na_intersect()</code></td>
+<td align="center"></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="reporting" class="section level4">
+<h4>Reporting</h4>
+<table>
+<colgroup>
+<col width="26%" />
+<col width="34%" />
+<col width="17%" />
+<col width="21%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Types</th>
+<th align="left">Descriptions</th>
+<th align="left">Functions</th>
+<th align="center">Support DBI</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">reporting the information of data diagnosis into pdf file</td>
+<td align="left">report the information for diagnosing the quality of the data.</td>
+<td align="left"><code>diagnose_report()</code></td>
+<td align="center">x</td>
+</tr>
+<tr class="even">
+<td align="left">reporting the information of data diagnosis into html file</td>
+<td align="left">report the information for diagnosing the quality of the data.</td>
+<td align="left"><code>diagnose_report()</code></td>
+<td align="center">x</td>
+</tr>
+<tr class="odd">
+<td align="left">reporting the information of data diagnosis into html file</td>
+<td align="left">dynamic report the information for diagnosing the quality of the data.</td>
+<td align="left"><code>diagnose_web_report()</code></td>
+<td align="center">x</td>
+</tr>
+<tr class="even">
+<td align="left">reporting the information of data diagnosis into pdf and html file</td>
+<td align="left">paged report the information for diagnosing the quality of the data.</td>
+<td align="left"><code>diagnose_paged_report()</code></td>
+<td align="center">x</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="eda" class="section level3">
+<h3>EDA</h3>
+<div id="univariate-eda" class="section level4">
+<h4>Univariate EDA</h4>
+<table>
+<colgroup>
+<col width="16%" />
+<col width="16%" />
+<col width="32%" />
+<col width="16%" />
+<col width="20%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Types</th>
+<th align="left">Tasks</th>
+<th align="left">Descriptions</th>
+<th align="left">Functions</th>
+<th align="center">Support DBI</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">categorical</td>
+<td align="left">summaries</td>
+<td align="left">frequency tables</td>
+<td align="left"><code>univar_category()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="even">
+<td align="left">categorical</td>
+<td align="left">summaries</td>
+<td align="left">chi-squared test</td>
+<td align="left"><code>summary.univar_category()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="odd">
+<td align="left">categorical</td>
+<td align="left">visualize</td>
+<td align="left">bar charts</td>
+<td align="left"><code>plot.univar_category()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="even">
+<td align="left">categorical</td>
+<td align="left">visualize</td>
+<td align="left">bar charts</td>
+<td align="left"><code>plot_bar_category()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="odd">
+<td align="left">numerical</td>
+<td align="left">summaries</td>
+<td align="left">descriptive statistics</td>
+<td align="left"><code>describe()</code></td>
+<td align="center">x</td>
+</tr>
+<tr class="even">
+<td align="left">numerical</td>
+<td align="left">summaries</td>
+<td align="left">descriptive statistics</td>
+<td align="left"><code>univar_numeric()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="odd">
+<td align="left">numerical</td>
+<td align="left">summaries</td>
+<td align="left">descriptive statistics of standardized variable</td>
+<td align="left"><code>summary.univar_numeric()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="even">
+<td align="left">numerical</td>
+<td align="left">visualize</td>
+<td align="left">histogram, box plot</td>
+<td align="left"><code>plot.univar_numeric()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="odd">
+<td align="left">numerical</td>
+<td align="left">visualize</td>
+<td align="left">Q-Q plots</td>
+<td align="left"><code>plot_qq_numeric()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="even">
+<td align="left">numerical</td>
+<td align="left">visualize</td>
+<td align="left">box plot</td>
+<td align="left"><code>plot_box_numeric()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="odd">
+<td align="left">numerical</td>
+<td align="left">visualize</td>
+<td align="left">histogram</td>
+<td align="left"><code>plot_hist_numeric()</code></td>
+<td align="center"></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="bivariate-eda" class="section level4">
+<h4>Bivariate EDA</h4>
+<table>
+<colgroup>
+<col width="16%" />
+<col width="16%" />
+<col width="32%" />
+<col width="16%" />
+<col width="20%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Types</th>
+<th align="left">Tasks</th>
+<th align="left">Descriptions</th>
+<th align="left">Functions</th>
+<th align="center">Support DBI</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">categorical</td>
+<td align="left">summaries</td>
+<td align="left">frequency tables cross cases</td>
+<td align="left"><code>compare_category()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="even">
+<td align="left">categorical</td>
+<td align="left">summaries</td>
+<td align="left">contingency tables, chi-squared test</td>
+<td align="left"><code>summary.compare_category()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="odd">
+<td align="left">categorical</td>
+<td align="left">visualize</td>
+<td align="left">mosaics plot</td>
+<td align="left"><code>plot.compare_category()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="even">
+<td align="left">numerical</td>
+<td align="left">summaries</td>
+<td align="left">correlation coefficient, linear model summaries</td>
+<td align="left"><code>compare_numeric()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="odd">
+<td align="left">numerical</td>
+<td align="left">summaries</td>
+<td align="left">correlation coefficient, linear model summaries with threshold</td>
+<td align="left"><code>summary.compare_numeric()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="even">
+<td align="left">numerical</td>
+<td align="left">visualize</td>
+<td align="left">scatter plot with marginal box plot</td>
+<td align="left"><code>plot.compare_numeric()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="odd">
+<td align="left">numerical</td>
+<td align="left">Correlate</td>
+<td align="left">correlation coefficient</td>
+<td align="left"><code>correlate()</code></td>
+<td align="center">x</td>
+</tr>
+<tr class="even">
+<td align="left">numerical</td>
+<td align="left">Correlate</td>
+<td align="left">visualization of a correlation matrix</td>
+<td align="left"><code>plot_correlate()</code></td>
+<td align="center">x</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="normality-test" class="section level4">
+<h4>Normality Test</h4>
+<table>
+<colgroup>
+<col width="16%" />
+<col width="16%" />
+<col width="32%" />
+<col width="16%" />
+<col width="20%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Types</th>
+<th align="left">Tasks</th>
+<th align="left">Descriptions</th>
+<th align="left">Functions</th>
+<th align="center">Support DBI</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">numerical</td>
+<td align="left">summaries</td>
+<td align="left">Shapiro-Wilk normality test</td>
+<td align="left"><code>normality()</code></td>
+<td align="center">x</td>
+</tr>
+<tr class="even">
+<td align="left">numerical</td>
+<td align="left">summaries</td>
+<td align="left">normality diagnosis plot (histogram, Q-Q plots)</td>
+<td align="left"><code>plot_normality()</code></td>
+<td align="center">x</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="relationship-between-target-variable-and-predictors" class="section level4">
+<h4>Relationship between target variable and predictors</h4>
+<table>
+<colgroup>
+<col width="16%" />
+<col width="16%" />
+<col width="32%" />
+<col width="16%" />
+<col width="20%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Target Variable</th>
+<th align="left">Predictor</th>
+<th align="left">Descriptions</th>
+<th align="left">Functions</th>
+<th align="center">Support DBI</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">categorical</td>
+<td align="left">categorical</td>
+<td align="left">contingency tables</td>
+<td align="left"><code>relate()</code></td>
+<td align="center">x</td>
+</tr>
+<tr class="even">
+<td align="left">categorical</td>
+<td align="left">categorical</td>
+<td align="left">mosaics plot</td>
+<td align="left"><code>plot.relate()</code></td>
+<td align="center">x</td>
+</tr>
+<tr class="odd">
+<td align="left">categorical</td>
+<td align="left">numerical</td>
+<td align="left">descriptive statistic for each levels and total observation</td>
+<td align="left"><code>relate()</code></td>
+<td align="center">x</td>
+</tr>
+<tr class="even">
+<td align="left">categorical</td>
+<td align="left">numerical</td>
+<td align="left">density plot</td>
+<td align="left"><code>plot.relate()</code></td>
+<td align="center">x</td>
+</tr>
+<tr class="odd">
+<td align="left">categorical</td>
+<td align="left">categorical</td>
+<td align="left">bar charts</td>
+<td align="left"><code>plot_bar_category()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="even">
+<td align="left">numerical</td>
+<td align="left">categorical</td>
+<td align="left">ANOVA test</td>
+<td align="left"><code>relate()</code></td>
+<td align="center">x</td>
+</tr>
+<tr class="odd">
+<td align="left">numerical</td>
+<td align="left">categorical</td>
+<td align="left">scatter plot</td>
+<td align="left"><code>plot.relate()</code></td>
+<td align="center">x</td>
+</tr>
+<tr class="even">
+<td align="left">numerical</td>
+<td align="left">numerical</td>
+<td align="left">simple linear model</td>
+<td align="left"><code>relate()</code></td>
+<td align="center">x</td>
+</tr>
+<tr class="odd">
+<td align="left">numerical</td>
+<td align="left">numerical</td>
+<td align="left">box plot</td>
+<td align="left"><code>plot.relate()</code></td>
+<td align="center">x</td>
+</tr>
+<tr class="even">
+<td align="left">categorical</td>
+<td align="left">numerical</td>
+<td align="left">Q-Q plots</td>
+<td align="left"><code>plot_qq_numeric()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="odd">
+<td align="left">categorical</td>
+<td align="left">numerical</td>
+<td align="left">box plot</td>
+<td align="left"><code>plot_box_numeric()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="even">
+<td align="left">categorical</td>
+<td align="left">numerical</td>
+<td align="left">histogram</td>
+<td align="left"><code>plot_hist_numeric()</code></td>
+<td align="center"></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="reporting-1" class="section level4">
+<h4>Reporting</h4>
+<table>
+<colgroup>
+<col width="25%" />
+<col width="37%" />
+<col width="16%" />
+<col width="20%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Types</th>
+<th align="left">Descriptions</th>
+<th align="left">Functions</th>
+<th align="center">Support DBI</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">reporting the information of EDA into pdf file</td>
+<td align="left">reporting the information of EDA.</td>
+<td align="left"><code>eda_report()</code></td>
+<td align="center">x</td>
+</tr>
+<tr class="even">
+<td align="left">reporting the information of EDA into html file</td>
+<td align="left">reporting the information of EDA.</td>
+<td align="left"><code>eda_report()</code></td>
+<td align="center">x</td>
+</tr>
+<tr class="odd">
+<td align="left">reporting the information of EDA into pdf file</td>
+<td align="left">dynamic reporting the information of EDA.</td>
+<td align="left"><code>eda_web_report()</code></td>
+<td align="center">x</td>
+</tr>
+<tr class="even">
+<td align="left">reporting the information of EDA into html file</td>
+<td align="left">paged reporting the information of EDA.</td>
+<td align="left"><code>eda_paged_report()</code></td>
+<td align="center">x</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="transform-data" class="section level3">
+<h3>Transform Data</h3>
+<div id="find-variables" class="section level4">
+<h4>Find Variables</h4>
+<table>
+<colgroup>
+<col width="19%" />
+<col width="38%" />
+<col width="19%" />
+<col width="23%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Types</th>
+<th align="left">Descriptions</th>
+<th align="left">Functions</th>
+<th align="center">Support DBI</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">missing values</td>
+<td align="left">find the variable that contains the missing value in the object that inherits the data.frame</td>
+<td align="left"><code>find_na()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="even">
+<td align="left">outliers</td>
+<td align="left">find the numerical variable that contains outliers in the object that inherits the data.frame</td>
+<td align="left"><code>find_outliers()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="odd">
+<td align="left">skewed variable</td>
+<td align="left">find the numerical variable that skewed variable that inherits the data.frame</td>
+<td align="left"><code>find_skewness()</code></td>
+<td align="center"></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="imputation" class="section level4">
+<h4>Imputation</h4>
+<table>
+<colgroup>
+<col width="19%" />
+<col width="38%" />
+<col width="19%" />
+<col width="23%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Types</th>
+<th align="left">Descriptions</th>
+<th align="left">Functions</th>
+<th align="center">Support DBI</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">missing values</td>
+<td align="left">missing values are imputed with some representative values and statistical methods.</td>
+<td align="left"><code>imputate_na()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="even">
+<td align="left">outliers</td>
+<td align="left">outliers are imputed with some representative values and statistical methods.</td>
+<td align="left"><code>imputate_outlier()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="odd">
+<td align="left">summaries</td>
+<td align="left">calculate descriptive statistics of the original and imputed values.</td>
+<td align="left"><code>summary.imputation()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="even">
+<td align="left">visualize</td>
+<td align="left">the imputation of a numerical variable is a density plot, and the imputation of a categorical variable is a bar plot.</td>
+<td align="left"><code>plot.imputation()</code></td>
+<td align="center"></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="binning" class="section level4">
+<h4>Binning</h4>
+<table>
+<colgroup>
+<col width="19%" />
+<col width="38%" />
+<col width="19%" />
+<col width="23%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Types</th>
+<th align="left">Descriptions</th>
+<th align="left">Functions</th>
+<th align="center">Support DBI</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">binning</td>
+<td align="left">converts a numeric variable to a categorization variable</td>
+<td align="left"><code>binning()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="even">
+<td align="left">summaries</td>
+<td align="left">calculate frequency and relative frequency for each levels(bins)</td>
+<td align="left"><code>summary.bins()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="odd">
+<td align="left">visualize</td>
+<td align="left">visualize two plots on a single screen. The plot at the top is a histogram representing the frequency of the level. The plot at the bottom is a bar chart representing the frequency of the level.</td>
+<td align="left"><code>plot.bins()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="even">
+<td align="left">optimal binning</td>
+<td align="left">categorizes a numeric characteristic into bins for ulterior usage in scoring modeling</td>
+<td align="left"><code>binning_by()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="odd">
+<td align="left">summaries</td>
+<td align="left">summary metrics to evaluate the performance of binomial classification model</td>
+<td align="left"><code>summary.optimal_bins()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="even">
+<td align="left">visualize</td>
+<td align="left">generates plots for understand distribution, bad rate, and weight of evidence after running binning_by()</td>
+<td align="left"><code>plot.optimal_bins()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="odd">
+<td align="left">evaluate</td>
+<td align="left">calculates metrics to evaluate the performance of binned variable for binomial classification model</td>
+<td align="left"><code>performance_bin()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="even">
+<td align="left">summaries</td>
+<td align="left">summary metrics to evaluate the performance of binomial classification model after performance_bin()</td>
+<td align="left"><code>summary.performance_bin()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="odd">
+<td align="left">visualize</td>
+<td align="left">It generates plots for understand frequency, WoE by bins using performance_bin after running binning_by()</td>
+<td align="left"><code>plot.performance_bin()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="even">
+<td align="left">visualize</td>
+<td align="left">extract bins from “bins” and “optimal_bins” objects</td>
+<td align="left"><code>extract.bins()</code></td>
+<td align="center"></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="diagnose-binned-variable" class="section level4">
+<h4>Diagnose Binned Variable</h4>
+<table>
+<colgroup>
+<col width="19%" />
+<col width="38%" />
+<col width="19%" />
+<col width="23%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Types</th>
+<th align="left">Descriptions</th>
+<th align="left">Functions</th>
+<th align="center">Support DBI</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">diagnosis</td>
+<td align="left">performs diagnose performance that calculates metrics to evaluate the performance of binned variable for binomial classification model.</td>
+<td align="left"><code>performance_bin()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="even">
+<td align="left">summaries</td>
+<td align="left">summary method for “performance_bin”. summary metrics to evaluate the performance of binomial classification model.</td>
+<td align="left"><code>summary.performance_bin()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="odd">
+<td align="left">visualize</td>
+<td align="left">visualize for understand frequency, WoE by bins using performance_bin and something else.</td>
+<td align="left"><code>plot.performance_bin()</code></td>
+<td align="center"></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="transformation" class="section level4">
+<h4>Transformation</h4>
+<table>
+<colgroup>
+<col width="19%" />
+<col width="38%" />
+<col width="19%" />
+<col width="23%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Types</th>
+<th align="left">Descriptions</th>
+<th align="left">Functions</th>
+<th align="center">Support DBI</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">transformation</td>
+<td align="left">performs variable transformation for standardization and resolving skewness of numerical variables.</td>
+<td align="left"><code>transform()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="even">
+<td align="left">summaries</td>
+<td align="left">compares the distribution of data before and after data transformation</td>
+<td align="left"><code>summary.transform()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="odd">
+<td align="left">visualize</td>
+<td align="left">visualize two kinds of plot by attribute of ‘transform’ class. The transformation of a numerical variable is a density plot.</td>
+<td align="left"><code>plot.transform()</code></td>
+<td align="center"></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="reporting-2" class="section level4">
+<h4>Reporting</h4>
+<table>
+<colgroup>
+<col width="25%" />
+<col width="37%" />
+<col width="16%" />
+<col width="20%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Types</th>
+<th align="left">Descriptions</th>
+<th align="left">Functions</th>
+<th align="center">Support DBI</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">reporting the information of transformation into pdf</td>
+<td align="left">reporting the information of transformation.</td>
+<td align="left"><code>transformation_report()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="even">
+<td align="left">reporting the information of transformation into html</td>
+<td align="left">reporting the information of transformation.</td>
+<td align="left"><code>transformation_report()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="odd">
+<td align="left">reporting the information of transformation into pdf</td>
+<td align="left">dynamic reporting the information of transformation.</td>
+<td align="left"><code>transformation_web_report()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="even">
+<td align="left">reporting the information of transformation into html</td>
+<td align="left">paged reporting the information of transformation.</td>
+<td align="left"><code>transformation_paged_report()</code></td>
+<td align="center"></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="miscellaneous" class="section level3">
+<h3>Miscellaneous</h3>
+<div id="statistics" class="section level4">
+<h4>Statistics</h4>
+<table>
+<colgroup>
+<col width="19%" />
+<col width="38%" />
+<col width="19%" />
+<col width="23%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Types</th>
+<th align="left">Descriptions</th>
+<th align="left">Functions</th>
+<th align="center">Support DBI</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">statistics</td>
+<td align="left">calculate the entropy.</td>
+<td align="left"><code>entropy()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="even">
+<td align="left">statistics</td>
+<td align="left">calculate the skewness of the data.</td>
+<td align="left"><code>skewness()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="odd">
+<td align="left">statistics</td>
+<td align="left">calculate the kurtosis of the data.</td>
+<td align="left"><code>kurtosis()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="even">
+<td align="left">statistics</td>
+<td align="left">calculate the Jensen-Shannon divergence between two probability distributions.</td>
+<td align="left"><code>jsd()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="odd">
+<td align="left">statistics</td>
+<td align="left">calculate the Kullback-Leibler divergence between two probability distributions.</td>
+<td align="left"><code>kld()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="even">
+<td align="left">statistics</td>
+<td align="left">finding percentile of numerical variable.</td>
+<td align="left"><code>get_percentile()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="odd">
+<td align="left">statistics</td>
+<td align="left">transform a numeric vector using several methods like “log”, “sqrt”, “log+1”, “log+a”, “1/x”, “x^2”, “x^3”, “Box-Cox”, “Yeo-Johnson”</td>
+<td align="left"><code>get_transform()</code></td>
+<td align="center"></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="programming" class="section level4">
+<h4>Programming</h4>
+<table>
+<colgroup>
+<col width="19%" />
+<col width="38%" />
+<col width="19%" />
+<col width="23%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Types</th>
+<th align="left">Descriptions</th>
+<th align="left">Functions</th>
+<th align="center">Support DBI</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">programming</td>
+<td align="left">extracts variable information having a certain class from an object inheriting data.frame.</td>
+<td align="left"><code>find_class()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="even">
+<td align="left">programming</td>
+<td align="left">gets class of variables in data.frame or tbl_df.</td>
+<td align="left"><code>get_class()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="odd">
+<td align="left">programming</td>
+<td align="left">retrieves the column information of the DBMS table through the tbl_bdi object of dplyr.</td>
+<td align="left"><code>get_column_info()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="even">
+<td align="left">programming</td>
+<td align="left">finding Users Machine’s OS.</td>
+<td align="left"><code>get_os()</code></td>
+<td align="center"></td>
+</tr>
+<tr class="odd">
+<td align="left">programming</td>
+<td align="left">import Liberation Sans Narrow fonts.</td>
+<td align="left"><code>import_liberation()</code></td>
+<td align="center"></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

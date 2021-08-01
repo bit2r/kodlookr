@@ -4,9 +4,9 @@
 \name{kodlookr-package}
 \alias{kodlookr}
 \alias{kodlookr-package}
-\title{kodlookr: Tdkookr 패키지의 문서 한글화 패키지}
+\title{kodlookr: dlookr 패키지의 문서 한글화 패키지}
 \description{
-ddlookr 패키지는 데이터 분석 과정에서의 데이터 진단, 데이터 탐색(EDA) 및
+dlookr 패키지는 데이터 분석 과정에서의 데이터 진단, 데이터 탐색(EDA) 및
 변수의 변환 기능을 제공합니다.
 }
 \details{
