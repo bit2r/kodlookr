@@ -1,0 +1,1559 @@
+#' Describe column of table in the DBMS
+#'
+#' @description The get_column_info() retrieves the column information of the DBMS table through the tbl_bdi object of dplyr.
+#'
+#' @section Column information of the DBMS table:
+#'
+#' \itemize{
+#'   \item SQLite DBMS connected RSQLite::SQLite(): 
+#'   \itemize{
+#'     \item name: column name
+#'     \item type: data type in R
+#'   }
+#'   \item MySQL/MariaDB DBMS connected RMySQL::MySQL(): 
+#'   \itemize{
+#'     \item name: column name
+#'     \item Sclass: data type in R
+#'     \item type: data type of column in the DBMS
+#'     \item length: data length in the DBMS   
+#'   }
+#'   \item Oracle DBMS connected ROracle::dbConnect(): 
+#'   \itemize{
+#'     \item name: column name
+#'     \item Sclass: column type in R
+#'     \item type: data type of column in the DBMS
+#'     \item len: length of column(CHAR/VARCHAR/VARCHAR2 data type) in the DBMS
+#'     \item precision: precision of column(NUMBER data type) in the DBMS
+#'     \item scale: decimal places of column(NUMBER data type) in the DBMS
+#'     \item nullOK: nullability
+#'   }
+#' }
+#'
+#' @param df a tbl_dbi.
+#'
+#' @return An object of data.frame.
+#' @examples
+#' library(dplyr)
+#' # connect DBMS
+#' con_sqlite <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+#' 
+#' # copy heartfailure to the DBMS with a table named TB_HEARTFAILURE
+#' copy_to(con_sqlite, heartfailure, name = "TB_HEARTFAILURE", overwrite = TRUE)
+#' 
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   get_column_info
+#'   
+#' # Disconnect DBMS   
+#' DBI::dbDisconnect(con_sqlite)
+#' 
+#' @name get_column_info
+#' @usage get_column_info(df)
+#' 
+NULL
+
+
+#' Diagnose data quality of variables in the DBMS 
+#'
+#' @description The diagnose() produces information for diagnosing the quality of 
+#' the column of the DBMS table through tbl_dbi.
+#'
+#' @details The scope of data quality diagnosis is information on missing values
+#' and unique value information. Data quality diagnosis can determine variables
+#' that require missing value processing. Also, the unique value information can
+#' determine the variable to be removed from the data analysis.
+#'
+#' @section Diagnostic information:
+#' The information derived from the data diagnosis is as follows.:
+#'
+#' \itemize{
+#' \item variables : column names
+#' \item types : data type of the variable
+#' or to select a variable to be corrected or removed through data diagnosis.
+#'   \itemize{
+#'     \item integer, numeric, factor, ordered, character, etc.
+#'   }
+#' \item missing_count : number of missing values
+#' \item missing_percent : percentage of missing values
+#' \item unique_count : number of unique values
+#' \item unique_rate : ratio of unique values. unique_count / number of observation
+#' }
+#'
+#' See vignette("diagonosis") for an introduction to these concepts.
+#'
+#' @param .data a tbl_dbi.
+#' @param ... one or more unquoted expressions separated by commas.
+#' You can treat variable names like they are positions.
+#' Positive values select variables; negative values to drop variables.
+#' If the first expression is negative, diagnose() will automatically start with all variables.
+#' These arguments are automatically quoted and evaluated in a context where column names
+#' represent column positions.
+#' They support unquoting and splicing.
+#' @param in_database a logical. Specifies whether to perform in-database operations. 
+#' If TRUE, most operations are performed in the DBMS. if FALSE, 
+#' table data is taken in R and operated in-memory.
+#' @param collect_size a integer. The number of data samples from the DBMS to R. 
+#' Applies only if in_database = FALSE.
+#'
+#' @return An object of tbl_df.
+#' @seealso \code{\link{diagnose.data.frame}}, \code{\link{diagnose_category.tbl_dbi}}, 
+#' \code{\link{diagnose_numeric.tbl_dbi}}.
+#' @examples
+#' library(dplyr)
+#'
+#' # connect DBMS
+#' con_sqlite <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+#' 
+#' # copy jobchange to the DBMS with a table named TB_JOBCHANGE
+#' copy_to(con_sqlite, jobchange, name = "TB_JOBCHANGE", overwrite = TRUE)
+#' 
+#' # Using pipes ---------------------------------
+#' # Diagnosis of all columns
+#' con_sqlite %>% 
+#'   tbl("TB_JOBCHANGE") %>% 
+#'   diagnose()
+#'   
+#' # Positive values select columns
+#' con_sqlite %>% 
+#'   tbl("TB_JOBCHANGE") %>% 
+#'   diagnose(gender, education_level, company_size)
+#'   
+#' # Negative values to drop columns
+#' con_sqlite %>% 
+#'   tbl("TB_JOBCHANGE") %>% 
+#'   diagnose(-gender, -education_level, -company_size)
+#'   
+#' # Positions values select columns, and In-memory mode
+#' con_sqlite %>% 
+#'   tbl("TB_JOBCHANGE") %>% 
+#'   diagnose(1, 3, 8, in_database = FALSE)
+#'   
+#' # Positions values select columns, and In-memory mode and collect size is 200
+#' con_sqlite %>% 
+#'   tbl("TB_JOBCHANGE") %>% 
+#'   diagnose(-8, -9, -10, in_database = FALSE, collect_size = 200)
+#'
+#' # Using pipes & dplyr -------------------------
+#' # Diagnosis of missing variables
+#' con_sqlite %>% 
+#'   tbl("TB_JOBCHANGE") %>% 
+#'   diagnose() %>%
+#'   filter(missing_count > 0)
+#'   
+#' # Disconnect DBMS   
+#' DBI::dbDisconnect(con_sqlite)
+#'   
+#' @name diagnose.tbl_dbi
+#' @usage 
+#' ## S3 method for class 'tbl_dbi'
+#' diagnose(.data, ..., in_database = TRUE, collect_size = Inf)
+#' 
+NULL
+
+
+#' Diagnose data quality of categorical variables in the DBMS 
+#'
+#' @description The diagnose_category() produces information for 
+#' diagnosing the quality of the character(CHAR, VARCHAR, VARCHAR2, etc.) 
+#' column of the DBMS table through tbl_dbi.
+#' 
+#' @details The scope of the diagnosis is the occupancy status of the levels
+#' in categorical data. If a certain level of occupancy is close to 100%,
+#' then the removal of this variable in the forecast model will have to be
+#' considered. Also, if the occupancy of all levels is close to 0%, this
+#' variable is likely to be an identifier.
+#'
+#' @section Categorical diagnostic information:
+#' The information derived from the categorical data diagnosis is as follows.
+#'
+#' \itemize{
+#' \item variables : variable names
+#' \item levels: level names
+#' \item N : number of observation
+#' \item freq : number of observation at the levels
+#' \item ratio : percentage of observation at the levels
+#' \item rank : rank of occupancy ratio of levels
+#' }
+#'
+#' See vignette("diagonosis") for an introduction to these concepts.
+#'
+#' @param .data a tbl_dbi.
+#' @param ... one or more unquoted expressions separated by commas.
+#' You can treat variable names like they are positions.
+#' Positive values select variables; negative values to drop variables.
+#' If the first expression is negative, diagnose_category() will automatically
+#' start with all variables.
+#' These arguments are automatically quoted and evaluated in a context where
+#' column names represent column positions.
+#' They support unquoting and splicing.
+#' @param top an integer. Specifies the upper top rank to extract.
+#' Default is 10.
+#' @param type a character string specifying how result are extracted.
+#' Default is "rank" that extract top n ranks by decreasing frequency. 
+#' In this case, if there are ties in rank, more rows than the number specified 
+#' by the top argument are returned.
+#' "n" extract top n rows by decreasing frequency. 
+#' If there are too many rows to be returned because there are too many ties, 
+#' you can adjust the returned rows appropriately by using "n".
+#' @param in_database Specifies whether to perform in-database operations. 
+#' If TRUE, most operations are performed in the DBMS. if FALSE, 
+#' table data is taken in R and operated in-memory.
+#' @param collect_size a integer. The number of data samples from the DBMS to R. 
+#' Applies only if in_database = FALSE.
+#' 
+#' @return an object of tbl_df.
+#' @seealso \code{\link{diagnose_category.data.frame}}, \code{\link{diagnose.tbl_dbi}}, 
+#' \code{\link{diagnose_category.tbl_dbi}}, \code{\link{diagnose_numeric.tbl_dbi}}, 
+#' \code{\link{diagnose_outlier.tbl_dbi}}.
+#' @examples
+#' library(dplyr)
+#' 
+#' # connect DBMS
+#' con_sqlite <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+#' 
+#' # copy jobchange to the DBMS with a table named TB_JOBCHANGE
+#' copy_to(con_sqlite, jobchange, name = "TB_JOBCHANGE", overwrite = TRUE)
+#' 
+#' # Using pipes ---------------------------------
+#' # Diagnosis of all categorical variables
+#' con_sqlite %>% 
+#'   tbl("TB_JOBCHANGE") %>% 
+#'   diagnose_category()
+#'   
+#' # Positive values select variables
+#' con_sqlite %>% 
+#'   tbl("TB_JOBCHANGE") %>% 
+#'   diagnose_category(company_type, job_chnge)
+#'   
+#' # Negative values to drop variables, and In-memory mode
+#' con_sqlite %>% 
+#'   tbl("TB_JOBCHANGE") %>% 
+#'   diagnose_category(-company_type, -job_chnge, in_database = FALSE)
+#'   
+#' # Positions values select variables, and In-memory mode and collect size is 200
+#' con_sqlite %>% 
+#'   tbl("TB_JOBCHANGE") %>% 
+#'   diagnose_category(7, in_database = FALSE, collect_size = 200) 
+#'   
+#' # Positions values select variables
+#' con_sqlite %>% 
+#'   tbl("TB_JOBCHANGE") %>% 
+#'   diagnose_category(-7)
+#'   
+#' # Top rank levels with top argument
+#' con_sqlite %>% 
+#'   tbl("TB_JOBCHANGE") %>% 
+#'   diagnose_category(top = 2)
+#'
+#' # Using pipes & dplyr -------------------------
+#' # Extraction of level that is more than 60% of categorical data
+#' con_sqlite %>% 
+#'   tbl("TB_JOBCHANGE") %>% 
+#'   diagnose_category()  %>%
+#'   filter(ratio >= 60)
+#'   
+#' # Using type argument -------------------------
+#'  dfm <- data.frame(alpabet = c(rep(letters[1:5], times = 5), "c")) 
+#'  
+#' # copy dfm to the DBMS with a table named TB_EXAMPLE
+#' copy_to(con_sqlite, dfm, name = "TB_EXAMPLE", overwrite = TRUE)  
+#'  
+#' # extract rows that less than equal rank 10
+#' # default of top argument is 10
+#' con_sqlite %>% 
+#'   tbl("TB_EXAMPLE") %>% 
+#'   diagnose_category()
+#'    
+#' # extract rows that less than equal rank 2
+#' con_sqlite %>% 
+#'   tbl("TB_EXAMPLE") %>% 
+#'   diagnose_category(top = 2, type = "rank")
+#'    
+#' # extract rows that less than equal rank 2
+#' # default of type argument is "rank"
+#' con_sqlite %>% 
+#'   tbl("TB_EXAMPLE") %>% 
+#'   diagnose_category(top = 2)
+#'  
+#'  # extract only 2 rows
+#' con_sqlite %>% 
+#'   tbl("TB_EXAMPLE") %>% 
+#'   diagnose_category(top = 2, type = "n")
+#'
+#' # Disconnect DBMS   
+#' DBI::dbDisconnect(con_sqlite)
+#'
+#' @name diagnose_category.tbl_dbi
+#' @usage 
+#' ## S3 method for class 'tbl_dbi'
+#' diagnose_category(
+#'   .data,
+#'   ...,
+#'   top = 10,
+#'   type = c("rank", "n")[1],
+#'   in_database = TRUE,
+#'   collect_size = Inf
+#' )
+#' 
+NULL
+
+
+#' Diagnose data quality of numerical variables in the DBMS 
+#'
+#' @description The diagnose_numeric() produces information
+#' for diagnosing the quality of the numerical(INTEGER, NUMBER, etc.) column 
+#' of the DBMS table through tbl_dbi.
+#' 
+#' @details The scope of the diagnosis is the calculate a statistic that can be
+#' used to understand the distribution of numerical data.
+#' min, Q1, mean, median, Q3, max can be used to estimate the distribution
+#' of data. If the number of zero or minus is large, it is necessary to suspect
+#' the error of the data. If the number of outliers is large, a strategy of
+#' eliminating or replacing outliers is needed.
+#'
+#' @section Numerical diagnostic information:
+#' The information derived from the numerical data diagnosis is as follows.
+#'
+#' \itemize{
+#' \item variables : variable names
+#' \item min : minimum
+#' \item Q1 : 25 percentile
+#' \item mean : arithmetic average
+#' \item median : median. 50 percentile
+#' \item Q3 : 75 percentile
+#' \item max : maximum
+#' \item zero : count of zero values
+#' \item minus : count of minus values
+#' \item outlier : count of outliers
+#' }
+#'
+#' See vignette("diagonosis") for an introduction to these concepts.
+#'
+#' @param .data a tbl_dbi.
+#' @param ... one or more unquoted expressions separated by commas.
+#' You can treat variable names like they are positions.
+#' Positive values select variables; negative values to drop variables.
+#' If the first expression is negative, diagnose_numeric() will automatically
+#' start with all variables.
+#' These arguments are automatically quoted and evaluated in a context where column names
+#' represent column positions.
+#' They support unquoting and splicing.
+#' @param in_database Specifies whether to perform in-database operations. 
+#' If TRUE, most operations are performed in the DBMS. if FALSE, 
+#' table data is taken in R and operated in-memory. Not yet supported in_database = TRUE.
+#' @param collect_size a integer. The number of data samples from the DBMS to R. 
+#' Applies only if in_database = FALSE.
+#' @return an object of tbl_df.
+#' @seealso \code{\link{diagnose_numeric.data.frame}}, \code{\link{diagnose.tbl_dbi}}, 
+#' \code{\link{diagnose_category.tbl_dbi}}, \code{\link{diagnose_outlier.tbl_dbi}}.
+#' @examples
+#' library(dplyr)
+#' 
+#' # connect DBMS
+#' con_sqlite <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+#' 
+#' # copy heartfailure to the DBMS with a table named TB_HEARTFAILURE
+#' copy_to(con_sqlite, heartfailure, name = "TB_HEARTFAILURE", overwrite = TRUE)
+#'
+#' # Using pipes ---------------------------------
+#' # Diagnosis of all numerical variables
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   diagnose_numeric()
+#'   
+#' # Positive values select variables, and In-memory mode and collect size is 200
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   diagnose_numeric(age, sodium, collect_size = 200)
+#'   
+#' # Negative values to drop variables
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   diagnose_numeric(-age, -sodium)
+#'   
+#' # Positions values select variables
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   diagnose_numeric(5)
+#'   
+#' # Positions values select variables
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   diagnose_numeric(-1, -5)
+#'
+#' # Using pipes & dplyr -------------------------
+#' # List of variables containing outliers
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   diagnose_numeric()  %>%
+#'   filter(outlier > 0)
+#'
+#' # Disconnect DBMS   
+#' DBI::dbDisconnect(con_sqlite)
+#'
+#' @name diagnose_numeric.tbl_dbi
+#' @usage 
+#' ## S3 method for class 'tbl_dbi'
+#' diagnose_numeric(.data, ..., in_database = FALSE, collect_size = Inf)
+#' 
+NULL
+
+
+#' Diagnose outlier of numerical variables in the DBMS
+#'
+#' @description The diagnose_outlier() produces outlier information
+#' for diagnosing the quality of the numerical(INTEGER, NUMBER, etc.) column 
+#' of the DBMS table through tbl_dbi.
+#' 
+#' @details The scope of the diagnosis is the provide a outlier information.
+#' If the number of outliers is small and the difference between the averages
+#' including outliers and the averages not including them is large,
+#' it is necessary to eliminate or replace the outliers.
+#'
+#' @section Outlier Diagnostic information:
+#' The information derived from the numerical data diagnosis is as follows.
+#'
+#' \itemize{
+#' \item variables : variable names
+#' \item outliers_cnt : number of outliers
+#' \item outliers_ratio : percent of outliers
+#' \item outliers_mean : arithmetic average of outliers
+#' \item with_mean : arithmetic average of with outliers
+#' \item without_mean : arithmetic average of without outliers
+#' }
+#'
+#' See vignette("diagonosis") for an introduction to these concepts.
+#'
+#' @param .data a tbl_dbi.
+#' @param ... one or more unquoted expressions separated by commas.
+#' You can treat variable names like they are positions.
+#' Positive values select variables; negative values to drop variables.
+#' If the first expression is negative, diagnose_outlier() will automatically
+#' start with all variables.
+#' These arguments are automatically quoted and evaluated in a context
+#' where column names represent column positions.
+#' They support unquoting and splicing.
+#' @param in_database Specifies whether to perform in-database operations. 
+#' If TRUE, most operations are performed in the DBMS. if FALSE, 
+#' table data is taken in R and operated in-memory. Not yet supported in_database = TRUE.
+#' @param collect_size a integer. The number of data samples from the DBMS to R. 
+#' Applies only if in_database = FALSE.
+#' 
+#' @return an object of tbl_df.
+#' @seealso \code{\link{diagnose_outlier.data.frame}}, \code{\link{diagnose.tbl_dbi}}, 
+#' \code{\link{diagnose_category.tbl_dbi}}, \code{\link{diagnose_numeric.tbl_dbi}}.
+#' @examples
+#' library(dplyr)
+#' 
+#' # connect DBMS
+#' con_sqlite <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+#' 
+#' # copy heartfailure to the DBMS with a table named TB_HEARTFAILURE
+#' copy_to(con_sqlite, heartfailure, name = "TB_HEARTFAILURE", overwrite = TRUE)
+#'
+#' # Using pipes ---------------------------------
+#' # Diagnosis of all numerical variables
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   diagnose_outlier()
+#'   
+#' # Positive values select variables, and In-memory mode and collect size is 200
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   diagnose_outlier(platelets, sodium, collect_size = 200)
+#'   
+#' # Negative values to drop variables
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   diagnose_outlier(-platelets, -sodium)
+#'   
+#' # Positions values select variables
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   diagnose_outlier(5)
+#' # Positions values select variables
+#' 
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   diagnose_outlier(-1, -5)
+#'
+#' # Using pipes & dplyr -------------------------
+#' # outlier_ratio is more than 1%
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   diagnose_outlier()  %>%
+#'   filter(outliers_ratio > 1)
+#'
+#' # Disconnect DBMS   
+#' DBI::dbDisconnect(con_sqlite)
+#'
+#' @name diagnose_outlier.tbl_dbi
+#' @usage 
+#' ## S3 method for class 'tbl_dbi'
+#' diagnose_outlier(.data, ..., in_database = FALSE, collect_size = Inf)
+#' 
+NULL
+
+
+#' Plot outlier information of numerical data diagnosis in the DBMS
+#'
+#' @description The plot_outlier() visualize outlier information
+#' for diagnosing the quality of the numerical(INTEGER, NUMBER, etc.) column 
+#' of the DBMS table through tbl_dbi.
+#' 
+#' @details The scope of the diagnosis is the provide a outlier information.
+#' Since the plot is drawn for each variable, if you specify more than
+#' one variable in the ... argument, the specified number of plots are drawn.
+#'
+#' @section Outlier diagnostic information:
+#' The plot derived from the numerical data diagnosis is as follows.
+#'
+#' \itemize{
+#' \item With outliers box plot
+#' \item Without outliers box plot
+#' \item With outliers histogram
+#' \item Without outliers histogram
+#' }
+#'
+#' See vignette("diagonosis") for an introduction to these concepts.
+#'
+#' @param .data a tbl_dbi.
+#' @param ... one or more unquoted expressions separated by commas.
+#' You can treat variable names like they are positions.
+#' Positive values select variables; negative values to drop variables.
+#' If the first expression is negative, plot_outlier() will automatically start
+#' with all variables.
+#' These arguments are automatically quoted and evaluated in a context
+#' where column names represent column positions.
+#' They support unquoting and splicing.
+#' @param col a color to be used to fill the bars. The default is "lightblue".
+#' @param in_database Specifies whether to perform in-database operations. 
+#' If TRUE, most operations are performed in the DBMS. if FALSE, 
+#' table data is taken in R and operated in-memory. Not yet supported in_database = TRUE.
+#' @param collect_size a integer. The number of data samples from the DBMS to R. 
+#' Applies only if in_database = FALSE.
+#' @param typographic logical. Whether to apply focuses on typographic elements to ggplot2 visualization. 
+#' The default is TRUE. if TRUE provides a base theme that focuses on typographic elements using hrbrthemes package.
+#' 
+#' @seealso \code{\link{plot_outlier.data.frame}}, \code{\link{diagnose_outlier.tbl_dbi}}.
+#' @examples
+#' library(dplyr)
+#' 
+#' # connect DBMS
+#' con_sqlite <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+#' 
+#' # copy heartfailure to the DBMS with a table named TB_HEARTFAILURE
+#' copy_to(con_sqlite, heartfailure, name = "TB_HEARTFAILURE", overwrite = TRUE)
+#' 
+#' # Using pipes ---------------------------------
+#' # Visualization of all numerical variables
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   plot_outlier()
+#'   
+#' # Positive values select variables
+#'  con_sqlite %>% 
+#'    tbl("TB_HEARTFAILURE") %>% 
+#'    plot_outlier(platelets, sodium)
+#'   
+#' # Negative values to drop variables, and In-memory mode and collect size is 200
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   plot_outlier(-platelets, -sodium, collect_size = 200)
+#'   
+#' # Positions values select variables
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   plot_outlier(6)
+#'   
+#' # Positions values select variables
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   plot_outlier(-1, -5)
+#'   
+#' # Not allow the typographic elements
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   plot_outlier(-1, -5, typographic = FALSE)
+#'
+#' # Using pipes & dplyr -------------------------
+#' # Visualization of numerical variables with a ratio of
+#' # outliers greater than 1%
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   plot_outlier(con_sqlite %>% 
+#'                  tbl("TB_HEARTFAILURE") %>% 
+#'                  diagnose_outlier() %>%
+#'                  filter(outliers_ratio > 1) %>%
+#'                  select(variables) %>%
+#'                  pull())
+#'
+#' # Disconnect DBMS   
+#' DBI::dbDisconnect(con_sqlite)
+#'  
+#' @name plot_outlier.tbl_dbi
+#' @usage 
+#' ## S3 method for class 'tbl_dbi'
+#' plot_outlier(
+#'   .data,
+#'   ...,
+#'   col = "steelblue",
+#'   in_database = FALSE,
+#'   collect_size = Inf,
+#'   typographic = TRUE
+#' )
+#' 
+NULL
+
+
+#' Performs the Shapiro-Wilk test of normality
+#'
+#' @description The normality() performs Shapiro-Wilk test of normality 
+#' of numerical(INTEGER, NUMBER, etc.) column of the DBMS table through tbl_dbi.
+#'
+#' @details This function is useful when used with the \code{\link{group_by}}
+#' function of the dplyr package. If you want to test by level of the categorical
+#' data you are interested in, rather than the whole observation,
+#' you can use group_tf as the group_by function.
+#' This function is computed \code{\link{shapiro.test}} function.
+#'
+#' @section Normality test information:
+#' The information derived from the numerical data test is as follows.
+#'
+#' \itemize{
+#' \item statistic : the value of the Shapiro-Wilk statistic.
+#' \item p_value : an approximate p-value for the test. This is said in
+#' Roystion(1995) to be adequate for p_value < 0.1.
+#' \item sample : the numer of samples to perform the test.
+#' The number of observations supported by the stats::shapiro.test function is 3 to 5000.
+#' }
+#'
+#' @param .data a tbl_dbi.
+#' @param ... one or more unquoted expressions separated by commas.
+#' You can treat variable names like they are positions.
+#' Positive values select variables; negative values to drop variables.
+#' If the first expression is negative, normality() will automatically start with all variables.
+#' These arguments are automatically quoted and evaluated in a context where column names
+#' represent column positions.
+#' They support unquoting and splicing.
+#' @param sample the number of samples to perform the test.
+#' @param in_database Specifies whether to perform in-database operations. 
+#' If TRUE, most operations are performed in the DBMS. if FALSE, 
+#' table data is taken in R and operated in-memory. Not yet supported in_database = TRUE.
+#' @param collect_size a integer. The number of data samples from the DBMS to R. 
+#' Applies only if in_database = FALSE.
+#' 
+#' See vignette("EDA") for an introduction to these concepts.
+#'
+#' @return An object of the same class as .data.
+#' @seealso \code{\link{normality.data.frame}}, \code{\link{diagnose_numeric.tbl_dbi}}, 
+#' \code{\link{describe.tbl_dbi}}, \code{\link{plot_normality.tbl_dbi}}.
+#' @examples
+#' \donttest{
+#' library(dplyr)
+#' 
+#' # connect DBMS
+#' con_sqlite <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+#' 
+#' # copy heartfailure to the DBMS with a table named TB_HEARTFAILURE
+#' copy_to(con_sqlite, heartfailure, name = "TB_HEARTFAILURE", overwrite = TRUE)
+#'
+#' # Using pipes ---------------------------------
+#' # Normality test of all numerical variables
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   normality()
+#'
+#' # Positive values select variables, and In-memory mode and collect size is 200
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   normality(platelets, sodium, collect_size  = 200)
+#'
+#' # Positions values select variables
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   normality(1)
+#'
+#' # Using pipes & dplyr -------------------------
+#' # Test all numerical variables by 'smoking' and 'death_event',
+#' # and extract only those with 'smoking' variable level is "Yes".
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   group_by(smoking, death_event) %>%
+#'   normality() %>%
+#'   filter(smoking == "Yes")
+#'
+#' # extract only those with 'sex' variable level is "Male",
+#' # and test 'sodium' by 'smoking' and 'death_event'
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   filter(sex == "Male") %>%
+#'   group_by(smoking, death_event) %>%
+#'   normality(sodium)
+#'
+#' # Test log(sodium) variables by 'smoking' and 'death_event',
+#' # and extract only p.value greater than 0.01.
+#' 
+#' # SQLite extension functions for log
+#' RSQLite::initExtension(con_sqlite)
+#' 
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   mutate(log_sodium = log(sodium)) %>%
+#'   group_by(smoking, death_event) %>%
+#'   normality(log_sodium) %>%
+#'   filter(p_value > 0.01)
+#'  
+#' # Disconnect DBMS   
+#' DBI::dbDisconnect(con_sqlite)
+#' }
+#' 
+#' @name normality.tbl_dbi
+#' @usage 
+#' ## S3 method for class 'tbl_dbi'
+#' normality(.data, ..., sample = 5000, in_database = FALSE, collect_size = Inf)
+#' 
+NULL
+
+
+#' Plot distribution information of numerical data
+#'
+#' @description The plot_normality() visualize distribution information
+#' for normality test of the numerical(INTEGER, NUMBER, etc.) column of 
+#' the DBMS table through tbl_dbi.
+#'
+#' @details The scope of the visualization is the provide a distribution information.
+#' Since the plot is drawn for each variable, if you specify more than
+#' one variable in the ... argument, the specified number of plots are drawn.
+#'
+#' The argument values that left and right can have are as follows.:
+#' 
+#' \itemize{
+#'   \item "log" : log transformation. log(x)
+#'   \item "log+1" : log transformation. log(x + 1). Used for values that contain 0.
+#'   \item "sqrt" : square root transformation.
+#'   \item "1/x" : 1 / x transformation
+#'   \item "x^2" : x square transformation
+#'   \item "x^3" : x^3 square transformation
+#'   \item "Box-Cox" : Box-Box transformation
+#'   \item "Yeo-Johnson" : Yeo-Johnson transformation
+#' }
+#'
+#' @section Distribution information:
+#' The plot derived from the numerical data visualization is as follows.
+#'
+#' \itemize{
+#' \item histogram by original data
+#' \item q-q plot by original data
+#' \item histogram by log transfer data
+#' \item histogram by square root transfer data
+#' }
+#'
+#' @param .data a tbl_dbi.
+#' @param ... one or more unquoted expressions separated by commas.
+#' You can treat variable names like they are positions.
+#' Positive values select variables; negative values to drop variables.
+#' If the first expression is negative, plot_normality() will automatically
+#' start with all variables.
+#' These arguments are automatically quoted and evaluated in a context where column names
+#' represent column positions.
+#' They support unquoting and splicing.
+#' 
+#' See vignette("EDA") for an introduction to these concepts.
+#' @param in_database Specifies whether to perform in-database operations. 
+#' If TRUE, most operations are performed in the DBMS. if FALSE, 
+#' table data is taken in R and operated in-memory. Not yet supported in_database = TRUE.
+#' @param collect_size a integer. The number of data samples from the DBMS to R. 
+#' Applies only if in_database = FALSE.
+#' @param left character. Specifies the data transformation method to draw the histogram in the 
+#' lower left corner. The default is "log".
+#' @param right character. Specifies the data transformation method to draw the histogram in the 
+#' lower right corner. The default is "sqrt".
+#' @param col a color to be used to fill the bars. The default is "steelblue".
+#' @param typographic logical. Whether to apply focuses on typographic elements to ggplot2 visualization. 
+#' 
+#' @seealso \code{\link{plot_normality.data.frame}}, \code{\link{plot_outlier.tbl_dbi}}.
+#' @examples
+#' \donttest{
+#' library(dplyr)
+#' 
+#' # connect DBMS
+#' con_sqlite <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+#' 
+#' # copy heartfailure to the DBMS with a table named TB_HEARTFAILURE
+#' copy_to(con_sqlite, heartfailure, name = "TB_HEARTFAILURE", overwrite = TRUE)
+#'
+#' # Using pipes ---------------------------------
+#' # Visualization of all numerical variables
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   plot_normality()
+#'
+#' # Positive values select variables, and In-memory mode and collect size is 200
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   plot_normality(platelets, sodium, collect_size = 200)
+#'
+#' # Positions values select variables
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   plot_normality(1)
+#'
+#' # Not allow the typographic elements
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   plot_normality(1, typographic = FALSE)
+#'   
+#' # Using pipes & dplyr -------------------------
+#' # Plot 'sodium' variable by 'smoking' and 'death_event'
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   group_by(smoking, death_event) %>%
+#'   plot_normality(sodium)
+#'
+#' # Plot using left and right arguments
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   group_by(smoking, death_event) %>%
+#'   plot_normality(sodium, left = "Box-Cox", right = "log")
+#'
+#' # extract only those with 'smoking' variable level is "Yes",
+#' # and plot 'sodium' by 'death_event'
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   filter(smoking == "Yes") %>%
+#'   group_by(death_event) %>%
+#'   plot_normality(sodium)
+#'   
+#' # Disconnect DBMS   
+#' DBI::dbDisconnect(con_sqlite)
+#' }
+#' 
+#' @name plot_normality.tbl_dbi
+#' @usage 
+#' ## S3 method for class 'tbl_dbi'
+#' plot_normality(
+#'   .data,
+#'   ...,
+#'   in_database = FALSE,
+#'   collect_size = Inf,
+#'   left = c("log", "sqrt", "log+1", "1/x", "x^2", "x^3", "Box-Cox", "Yeo-Johnson"),
+#'   right = c("sqrt", "log", "log+1", "1/x", "x^2", "x^3", "Box-Cox", "Yeo-Johnson"),
+#'   col = "steelblue",
+#'   typographic = TRUE
+#' )
+#' 
+NULL
+
+
+#' Compute the correlation coefficient between two numerical data
+#'
+#' @description The correlate() compute Pearson's the correlation
+#' coefficient of the numerical(INTEGER, NUMBER, etc.) column of 
+#' the DBMS table through tbl_dbi.
+#'
+#' @details This function is useful when used with the group_by() function of the dplyr package.
+#' If you want to compute by level of the categorical data you are interested in,
+#' rather than the whole observation, you can use \code{\link{grouped_df}} as the group_by() function.
+#' This function is computed stats::cor() function by use = "pairwise.complete.obs" option.
+#'
+#' @section Correlation coefficient information:
+#' The information derived from the numerical data compute is as follows.
+#'
+#' \itemize{
+#' \item var1 : names of numerical variable
+#' \item var2 : name of the corresponding numeric variable
+#' \item coef_corr : Pearson's correlation coefficient
+#' }
+#'
+#' @param .data a tbl_dbi.
+#' @param ... one or more unquoted expressions separated by commas.
+#' You can treat variable names like they are positions.
+#' Positive values select variables; negative values to drop variables.
+#' If the first expression is negative, correlate() will automatically start with all variables.
+#' These arguments are automatically quoted and evaluated in a context where column names
+#' represent column positions.
+#' They support unquoting and splicing.
+#' @param in_database Specifies whether to perform in-database operations. 
+#' If TRUE, most operations are performed in the DBMS. if FALSE, 
+#' table data is taken in R and operated in-memory. Not yet supported in_database = TRUE.
+#' @param collect_size a integer. The number of data samples from the DBMS to R. 
+#' Applies only if in_database = FALSE.
+#' @param method a character string indicating which correlation coefficient (or covariance) is 
+#' to be computed. One of "pearson" (default), "kendall", or "spearman": can be abbreviated.
+#' 
+#' See vignette("EDA") for an introduction to these concepts.
+#'
+#' @seealso \code{\link{correlate.data.frame}}, \code{\link{cor}}.
+#' @examples
+#' library(dplyr)
+#' 
+#' # connect DBMS
+#' con_sqlite <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+#' 
+#' # copy heartfailure to the DBMS with a table named TB_HEARTFAILURE
+#' copy_to(con_sqlite, heartfailure, name = "TB_HEARTFAILURE", overwrite = TRUE)
+#'
+#' # Using pipes ---------------------------------
+#' # Correlation coefficients of all numerical variables
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   correlate()
+#'  
+#' # Positive values select variables
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   correlate(platelets, sodium)
+#'  
+#' # Negative values to drop variables, and In-memory mode and collect size is 200
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   correlate(-platelets, -sodium, collect_size = 200)
+#'  
+#' # Positions values select variables
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   correlate(1)
+#'  
+#' # Positions values select variables
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   correlate(-1, -2, -3, -5, -6)
+#'  
+#' # ---------------------------------------------
+#' # Correlation coefficient
+#' # that eliminates redundant combination of variables
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   correlate() %>%
+#'   filter(as.integer(var1) > as.integer(var2))
+#'
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   correlate(platelets, sodium) %>%
+#'   filter(as.integer(var1) > as.integer(var2))
+#'
+#' # Using pipes & dplyr -------------------------
+#' # Compute the correlation coefficient of creatinine variable by 'hblood_pressure'
+#' # and 'death_event' variables. And extract only those with absolute
+#' # value of correlation coefficient is greater than 0.2
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   group_by(hblood_pressure, death_event) %>%
+#'   correlate(creatinine) %>%
+#'   filter(abs(coef_corr) >= 0.2)
+#'
+#' # extract only those with 'hblood_pressure' variable level is "Yes",
+#' # and compute the correlation coefficient of 'creatinine' variable
+#' # by 'sex' and 'death_event' variables.
+#' # And the correlation coefficient is negative and smaller than -0.3
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   filter(hblood_pressure == "Yes") %>%
+#'   group_by(sex, death_event) %>%
+#'   correlate(creatinine) %>%
+#'   filter(coef_corr < 0) %>%
+#'   filter(abs(coef_corr) > 0.3)
+#'  
+#' # Disconnect DBMS   
+#' DBI::dbDisconnect(con_sqlite)
+#'  
+#' @name correlate.tbl_dbi
+#' @usage 
+#' ## S3 method for class 'tbl_dbi'
+#' correlate(
+#'   .data,
+#'   ...,
+#'   in_database = FALSE,
+#'   collect_size = Inf,
+#'   method = c("pearson", "kendall", "spearman")
+#' )
+#' 
+NULL
+
+
+#' Visualize correlation plot of numerical data
+#'
+#' @description The plot_correlate() visualize correlation plot
+#' for find relationship between two numerical(INTEGER, NUMBER, etc.) column of 
+#' the DBMS table through tbl_dbi.
+#'
+#' @details The scope of the visualization is the provide a correlation information.
+#' Since the plot is drawn for each variable, if you specify more than
+#' one variable in the ... argument, the specified number of plots are drawn.
+#'
+#' @param .data a tbl_dbi.
+#' @param ... one or more unquoted expressions separated by commas.
+#' You can treat variable names like they are positions.
+#' Positive values select variables; negative values to drop variables.
+#' If the first expression is negative, plot_correlate() will automatically start with all variables.
+#' These arguments are automatically quoted and evaluated in a context where column names
+#' represent column positions.
+#' They support unquoting and splicing.
+#' @param in_database Specifies whether to perform in-database operations. 
+#' If TRUE, most operations are performed in the DBMS. if FALSE, 
+#' table data is taken in R and operated in-memory. Not yet supported in_database = TRUE.
+#' @param collect_size a integer. The number of data samples from the DBMS to R. 
+#' Applies only if in_database = FALSE.
+#' @param method a character string indicating which correlation coefficient (or covariance) is 
+#' to be computed. One of "pearson" (default), "kendall", or "spearman": can be abbreviated.
+#' 
+#' See vignette("EDA") for an introduction to these concepts.
+#'
+#' @seealso \code{\link{plot_correlate.data.frame}}, \code{\link{plot_outlier.tbl_dbi}}.
+#' @examples
+#' library(dplyr)
+#' 
+#' # connect DBMS
+#' con_sqlite <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+#' 
+#' # copy heartfailure to the DBMS with a table named TB_HEARTFAILURE
+#' copy_to(con_sqlite, heartfailure, name = "TB_HEARTFAILURE", overwrite = TRUE)
+#'
+#' # Using pipes ---------------------------------
+#' # Visualize correlation plot of all numerical variables
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   plot_correlate()
+#'   
+#' # Positive values select variables, and In-memory mode and collect size is 200
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   plot_correlate(platelets, sodium, collect_size = 200)
+#'   
+#' # Negative values to drop variables
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   plot_correlate(-platelets, -sodium)
+#'   
+#' # Positions values select variables
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   plot_correlate(1)
+#'   
+#' # Positions values select variables
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   plot_correlate(-1, -2, -3, -5, -6)
+#'
+#' # Using pipes & dplyr -------------------------
+#' # Visualize correlation plot of 'sodiumsodium' variable by 'smoking'
+#' # and 'death_event' variables.
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   group_by(smoking, death_event) %>%
+#'   plot_correlate(sodium)
+#'
+#' # Extract only those with 'smoking' variable level is "Yes",
+#' # and visualize correlation plot of 'sodium' variable by 'sex'
+#' # and 'death_event' variables.
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   filter(smoking == "Yes") %>%
+#'   group_by(sex, death_event) %>%
+#'   plot_correlate(sodium)
+#'
+#' # Disconnect DBMS   
+#' DBI::dbDisconnect(con_sqlite)
+#'
+#' @name plot_correlate.tbl_dbi
+#' @usage 
+#' ## S3 method for class 'tbl_dbi'
+#' plot_correlate(
+#'   .data,
+#'   ...,
+#'   in_database = FALSE,
+#'   collect_size = Inf,
+#'   method = c("pearson", "kendall", "spearman")
+#' )
+#' 
+NULL
+
+
+#' Compute descriptive statistic
+#'
+#' @description The describe() compute descriptive statistic of numerical(INTEGER, NUMBER, etc.) 
+#' column of the DBMS table through tbl_dbi for exploratory data analysis.
+#'
+#' @details This function is useful when used with the \code{\link{group_by}} function
+#' of the dplyr package.
+#' If you want to calculate the statistic by level of the categorical data
+#' you are interested in, rather than the whole statistic, you can use
+#' grouped_df as the group_by() function.
+#'
+#' @section Descriptive statistic information:
+#' The information derived from the numerical data describe is as follows.
+#'
+#' \itemize{
+#' \item n : number of observations excluding missing values
+#' \item na : number of missing values
+#' \item mean : arithmetic average
+#' \item sd : standard deviation
+#' \item se_mean : standard error mean. sd/sqrt(n)
+#' \item IQR : interquartile range (Q3-Q1)
+#' \item skewness : skewness
+#' \item kurtosis : kurtosis
+#' \item p25 : Q1. 25\% percentile
+#' \item p50 : median. 50\% percentile
+#' \item p75 : Q3. 75\% percentile
+#' \item p01, p05, p10, p20, p30 : 1\%, 5\%, 20\%, 30\% percentiles
+#' \item p40, p60, p70, p80 : 40\%, 60\%, 70\%, 80\% percentiles
+#' \item p90, p95, p99, p100 : 90\%, 95\%, 99\%, 100\% percentiles
+#'
+#' }
+#'
+#' @param .data a tbl_dbi.
+#' @param ... one or more unquoted expressions separated by commas.
+#' You can treat variable names like they are positions.
+#' Positive values select variables; negative values to drop variables.
+#' If the first expression is negative, describe() will automatically start with all variables.
+#' These arguments are automatically quoted and evaluated in a context where column names
+#' represent column positions.
+#' They support unquoting and splicing.
+#' @param statistics character. the name of the descriptive statistic to calculate. 
+#' The defaults is c("mean", "sd", "se_mean", "IQR", "skewness", "kurtosis", "quantiles")
+#' @param quantiles numeric. list of quantiles to calculate. 
+#' The values of elements must be between 0 and 1. and to calculate quantiles, 
+#' you must include "quantiles" in the statistics argument value. 
+#' The default is c(0, .01, .05, 0.1, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.7, 0.75, 0.8, 0.9, 0.95, 0.99, 1).
+#' @param in_database Specifies whether to perform in-database operations. 
+#' If TRUE, most operations are performed in the DBMS. if FALSE, 
+#' table data is taken in R and operated in-memory. Not yet supported in_database = TRUE.
+#' @param collect_size a integer. The number of data samples from the DBMS to R. 
+#' Applies only if in_database = FALSE.
+#' 
+#' See vignette("EDA") for an introduction to these concepts.
+#'
+#' @return An object of the same class as .data.
+#' @seealso \code{\link{describe.data.frame}}, \code{\link{diagnose_numeric.tbl_dbi}}.
+#' @examples
+#' library(dplyr)
+#' 
+#' # connect DBMS
+#' con_sqlite <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+#' 
+#' # copy heartfailure to the DBMS with a table named TB_HEARTFAILURE
+#' copy_to(con_sqlite, heartfailure, name = "TB_HEARTFAILURE", overwrite = TRUE)
+#'
+#' # Using pipes ---------------------------------
+#' # Positive values select variables
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   describe(platelets, creatinine, sodium)
+#'   
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   describe(platelets, creatinine, sodium, 
+#'     statistics = c("mean", "sd", "quantiles"), quantiles = 0.1)
+#'
+#' # Negative values to drop variables, and In-memory mode and collect size is 200
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   describe(-platelets, -creatinine, -sodium, collect_size = 200)
+#'
+#' # Using pipes & dplyr -------------------------
+#' # Find the statistic of all numerical variables by 'smoking' and 'death_event',
+#' # and extract only those with 'smoking' variable level is "Yes".
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   group_by(smoking, death_event) %>%
+#'   describe() %>%
+#'   filter(smoking == "Yes")
+#'
+#' # extract only those with 'sex' variable level is "Male",
+#' # and find 'sodium' statistics by 'smoking' and 'death_event'
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   filter(sex == "Male") %>%
+#'   group_by(smoking, death_event) %>%
+#'   describe(sodium)
+#'
+#' # Disconnect DBMS   
+#' DBI::dbDisconnect(con_sqlite)
+#' 
+#' @name describe.tbl_dbi
+#' @usage 
+#' ## S3 method for class 'tbl_dbi'
+#' describe(
+#'   .data,
+#'   ...,
+#'   statistics = NULL,
+#'   quantiles = NULL,
+#'   in_database = FALSE,
+#'   collect_size = Inf
+#' )
+#' 
+NULL
+
+
+#' Target by one column in the DBMS
+#'
+#' @description
+#' In the data analysis, a target_df class is created to identify the
+#' relationship between the target column and the other column of the DBMS table through tbl_dbi
+#'
+#' @details
+#' Data analysis proceeds with the purpose of predicting target variables that
+#'  correspond to the facts of interest, or examining associations and
+#'  relationships with other variables of interest.
+#'  Therefore, it is a major challenge for EDA to examine the relationship
+#'  between the target variable and its corresponding variable.
+#'  Based on the derived relationships, analysts create scenarios for data analysis.
+#'
+#'  target_by() inherits the \code{\link{grouped_df}} class and returns a target_df
+#'  class containing information about the target variable and the variable.
+#'
+#' See vignette("EDA") for an introduction to these concepts.
+#'
+#' @param .data a tbl_dbi.
+#' @param target target variable.
+#' @param in_database Specifies whether to perform in-database operations. 
+#' If TRUE, most operations are performed in the DBMS. if FALSE, 
+#' table data is taken in R and operated in-memory. Not yet supported in_database = TRUE.
+#' @param collect_size a integer. The number of data samples from the DBMS to R.
+#' Applies only if in_database = FALSE.
+#' @param ... arguments to be passed to methods.
+#' @return an object of target_df class.
+#' Attributes of target_df class is as follows.
+#' \itemize{
+#' \item type_y : the data type of target variable.
+#' }
+#' @seealso \code{\link{target_by.data.frame}}, \code{\link{relate}}.
+#' @examples
+#' library(dplyr)
+#'
+#' # connect DBMS
+#' con_sqlite <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+#' 
+#' # copy heartfailure to the DBMS with a table named TB_HEARTFAILURE
+#' copy_to(con_sqlite, heartfailure, name = "TB_HEARTFAILURE", overwrite = TRUE)
+#'
+#' # If the target variable is a categorical variable
+#' categ <- target_by(con_sqlite %>% tbl("TB_HEARTFAILURE") , death_event)
+#'
+#' # If the variable of interest is a numerical variable
+#' cat_num <- relate(categ, sodium)
+#' cat_num
+#' summary(cat_num)
+#' plot(cat_num)
+#'
+#' # If the variable of interest is a categorical column
+#' cat_cat <- relate(categ, hblood_pressure)
+#' cat_cat
+#' summary(cat_cat)
+#' plot(cat_cat)
+#'
+#' ##---------------------------------------------------
+#' # If the target variable is a categorical column, 
+#' # and In-memory mode and collect size is 200
+#' num <- target_by(con_sqlite %>% tbl("TB_HEARTFAILURE"), death_event, collect_size = 250)
+#'
+#' # If the variable of interest is a numerical column
+#' num_num <- relate(num, creatinine)
+#' num_num
+#' summary(num_num)
+#' plot(num_num)
+#' plot(num_num, hex_thres = 200)
+#'
+#' # If the variable of interest is a categorical column
+#' num_cat <- relate(num, smoking)
+#' num_cat
+#' summary(num_cat)
+#' plot(num_cat)
+#' 
+#' # Disconnect DBMS   
+#' DBI::dbDisconnect(con_sqlite)
+#' 
+#' @name target_by.tbl_dbi
+#' @usage 
+#' ## S3 method for class 'tbl_dbi'
+#' target_by(.data, target, in_database = FALSE, collect_size = Inf, ...)
+#' 
+NULL
+
+
+#' Reporting the information of data diagnosis for table of the DBMS
+#'
+#' @description The diagnose_report() report the information for diagnosing
+#' the quality of the DBMS table through tbl_dbi
+#'
+#' @details Generate generalized data diagnostic reports automatically.
+#' You can choose to output to pdf and html files.
+#' This is useful for diagnosing a data frame with a large number of variables
+#' than data with a small number of variables.
+#' For pdf output, Korean Gothic font must be installed in Korean operating system.
+#' 
+#' @section Reported information:
+#' Reported from the data diagnosis is as follows.
+#'
+#' \itemize{
+#'   \item Diagnose Data
+#'   \itemize{
+#'     \item Overview of Diagnosis
+#'     \itemize{
+#'       \item List of all variables quality
+#'       \item Diagnosis of missing data
+#'       \item Diagnosis of unique data(Text and Category)
+#'       \item Diagnosis of unique data(Numerical)
+#'     }
+#'     \item Detailed data diagnosis
+#'     \itemize{
+#'       \item Diagnosis of categorical variables
+#'       \item Diagnosis of numerical variables
+#'       \item List of numerical diagnosis (zero)
+#'       \item List of numerical diagnosis (minus)
+#'     }
+#'   }
+#'   \item Diagnose Outliers
+#'   \itemize{
+#'     \item Overview of Diagnosis
+#'     \itemize{
+#'       \item Diagnosis of numerical variable outliers
+#'       \item Detailed outliers diagnosis
+#'     }
+#'   }
+#' }
+#'
+#' See vignette("diagonosis") for an introduction to these concepts.
+#'
+#' @param .data a tbl_dbi.
+#' @param in_database Specifies whether to perform in-database operations. 
+#' If TRUE, most operations are performed in the DBMS. if FALSE, 
+#' table data is taken in R and operated in-memory. Not yet supported in_database = TRUE.
+#' @param collect_size a integer. The number of data samples from the DBMS to R. 
+#' Applies only if in_database = FALSE.
+#' @param output_format report output type. Choose either "pdf" and "html".
+#' "pdf" create pdf file by knitr::knit().
+#' "html" create html file by rmarkdown::render().
+#' @param output_file name of generated file. default is NULL.
+#' @param output_dir name of directory to generate report file. default is tempdir().
+#' @param font_family character. font family name for figure in pdf.
+#' @param ... arguments to be passed to methods.
+#' 
+#' @seealso \code{\link{diagnose_report.data.frame}}.
+#' @examples
+#' if (FALSE) {
+#' library(dplyr)
+#' 
+#' # Generate data for the example
+#' heartfailure2 <- heartfailure
+#' heartfailure2[sample(seq(NROW(heartfailure2)), 20), "platelets"] <- NA
+#' heartfailure2[sample(seq(NROW(heartfailure2)), 5), "smoking"] <- NA
+#'
+#' # connect DBMS
+#' con_sqlite <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+#' 
+#' # copy heartfailure2 to the DBMS with a table named TB_HEARTFAILURE
+#' copy_to(con_sqlite, heartfailure2, name = "TB_HEARTFAILURE", overwrite = TRUE)
+#'
+#' # reporting the diagnosis information -------------------------
+#' # create pdf file. file name is DataDiagnosis_Report.pdf
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   diagnose_report()
+#'   
+#' # create pdf file. file name is Diagn.pdf, and collect size is 350
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   diagnose_report(collect_size = 350, output_file = "Diagn.pdf")
+#' 
+#' # create html file. file name is Diagnosis_Report.html
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   diagnose_report(output_format = "html")
+#' 
+#' # create html file. file name is Diagn.html
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   diagnose_report(output_format = "html", output_file = "Diagn.html")
+#'   
+#' # Disconnect DBMS   
+#' DBI::dbDisconnect(con_sqlite)
+#' }
+#' 
+#' @name diagnose_report.tbl_dbi
+#' @usage 
+#' ## S3 method for class 'tbl_dbi'
+#' diagnose_report(
+#'   .data,
+#'   output_format = c("pdf", "html"),
+#'   output_file = NULL,
+#'   output_dir = tempdir(),
+#'   font_family = NULL,
+#'   in_database = FALSE,
+#'   collect_size = Inf,
+#'   ...
+#' )
+#' 
+NULL
+
+
+#' Reporting the information of EDA for table of the DBMS
+#'
+#' @description The eda_report() report the information of Exploratory
+#' data analysis for object inheriting from the DBMS table through tbl_dbi
+#'
+#' @details Generate generalized data EDA reports automatically.
+#' You can choose to output to pdf and html files.
+#' This is useful for EDA a data frame with a large number of variables
+#' than data with a small number of variables.
+#' For pdf output, Korean Gothic font must be installed in Korean operating system.
+#' 
+#' @section Reported information:
+#' The EDA process will report the following information:
+#'
+#' \itemize{
+#'   \item Introduction
+#'   \itemize{
+#'     \item Information of Dataset
+#'     \item Information of Variables
+#'     \item About EDA Report
+#'   }
+#'   \item Univariate Analysis
+#'   \itemize{
+#'     \item Descriptive Statistics
+#'     \item Normality Test of Numerical Variables
+#'     \itemize{
+#'       \item Statistics and Visualization of (Sample) Data
+#'     }
+#'   }
+#'   \item Relationship Between Variables
+#'   \itemize{
+#'     \item Correlation Coefficient
+#'     \itemize{
+#'       \item Correlation Coefficient by Variable Combination
+#'       \item Correlation Plot of Numerical Variables
+#'     }
+#'   }
+#'   \item Target based Analysis
+#'   \itemize{
+#'     \item Grouped Descriptive Statistics
+#'     \itemize{
+#'       \item Grouped Numerical Variables
+#'       \item Grouped Categorical Variables
+#'     }
+#'     \item Grouped Relationship Between Variables
+#'     \itemize{
+#'       \item Grouped Correlation Coefficient
+#'       \item Grouped Correlation Plot of Numerical Variables
+#'     }
+#'   }
+#' }
+#'
+#' See vignette("EDA") for an introduction to these concepts.
+#'
+#' @param .data a tbl_dbi.
+#' @param target target variable.
+#' @param in_database Specifies whether to perform in-database operations. 
+#' If TRUE, most operations are performed in the DBMS. if FALSE, 
+#' table data is taken in R and operated in-memory. Not yet supported in_database = TRUE.
+#' @param collect_size a integer. The number of data samples from the DBMS to R. 
+#' Applies only if in_database = FALSE.
+#' @param output_format report output type. Choose either "pdf" and "html".
+#' "pdf" create pdf file by knitr::knit().
+#' "html" create html file by rmarkdown::render().
+#' @param output_file name of generated file. default is NULL.
+#' @param output_dir name of directory to generate report file. default is tempdir().
+#' @param font_family character. font family name for figure in pdf.
+#' @param ... arguments to be passed to methods.
+#' 
+#' @seealso \code{\link{eda_report.data.frame}}.
+#' @examples
+#' if (FALSE) {
+#' library(dplyr)
+#' 
+#' # Generate data for the example
+#' heartfailure2 <- heartfailure
+#' heartfailure2[sample(seq(NROW(heartfailure2)), 20), "platelets"] <- NA
+#' heartfailure2[sample(seq(NROW(heartfailure2)), 5), "smoking"] <- NA
+#'
+#' # connect DBMS
+#' con_sqlite <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+#' 
+#' # copy heartfailure2 to the DBMS with a table named TB_HEARTFAILURE
+#' copy_to(con_sqlite, heartfailure2, name = "TB_HEARTFAILURE", overwrite = TRUE)
+#'
+#' ## target variable is categorical variable
+#' # reporting the EDA information
+#' # create pdf file. file name is EDA_Report.pdf
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   eda_report(death_event)
+#' 
+#' # create pdf file. file name is EDA_TB_HEARTFAILURE.pdf
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   eda_report("death_event", output_file = "EDA_TB_HEARTFAILURE.pdf")
+#' 
+#' # create html file. file name is EDA_Report.html
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   eda_report("death_event", output_format = "html")
+#' 
+#' # create html file. file name is EDA_TB_HEARTFAILURE.html
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   eda_report(death_event, output_format = "html", output_file = "EDA_TB_HEARTFAILURE.html")
+#'
+#' ## target variable is numerical variable
+#' # reporting the EDA information, and collect size is 250
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   eda_report(sodium, collect_size = 250)
+#' 
+#' # create pdf file. file name is EDA2.pdf
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   eda_report("sodium", output_file = "EDA2.pdf")
+#' 
+#' # create html file. file name is EDA_Report.html
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   eda_report("sodium", output_format = "html")
+#' 
+#' # create html file. file name is EDA2.html
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   eda_report(sodium, output_format = "html", output_file = "EDA2.html")
+#'
+#' ## target variable is null
+#' # reporting the EDA information
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   eda_report()
+#' 
+#' # create pdf file. file name is EDA2.pdf
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   eda_report(output_file = "EDA2.pdf")
+#' 
+#' # create html file. file name is EDA_Report.html
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   eda_report(output_format = "html")
+#' 
+#' # create html file. file name is EDA2.html
+#' con_sqlite %>% 
+#'   tbl("TB_HEARTFAILURE") %>% 
+#'   eda_report(output_format = "html", output_file = "EDA2.html")
+#'   
+#' # Disconnect DBMS   
+#' DBI::dbDisconnect(con_sqlite)
+#' }
+#'
+#' @name eda_report.tbl_dbi
+#' @usage 
+#' ## S3 method for class 'tbl_dbi'
+#' eda_report(
+#'   .data,
+#'   target = NULL,
+#'   output_format = c("pdf", "html"),
+#'   output_file = NULL,
+#'   font_family = NULL,
+#'   output_dir = tempdir(),
+#'   in_database = FALSE,
+#'   collect_size = Inf,
+#'   ...
+#' )
+#' 
+NULL

@@ -1,0 +1,23 @@
+Package: kodlookr
+Title: Korean Help Resources for the dlookr Package
+Version: 0.1.0.9000
+Authors@R: 
+    c(person(given = "Choonghyun",
+             family = "Ryu",
+             role = c("aut", "cre"),
+             email = "choonghyun.ryu@gmail.com"),
+      person(given = "Gildong",
+             family = "Hong",
+             role = "aut"))
+Description: These are resources that translate the man pages and vignettes 
+    of the dlookr package into Korean.
+License: GPL-2 | file LICENSE
+URL: https://github.com/bit2r/kodlookr
+BugReports: https://github.com/bit2r/kodlookr/issues
+Depends: 
+    dlookr (>= 0.5.0),
+    rmarkdown
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.1
+VignetteBuilder: knitr
