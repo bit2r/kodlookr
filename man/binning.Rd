@@ -2,7 +2,7 @@
 % Please edit documentation in R/binning.R
 \name{binning}
 \alias{binning}
-\title{Binning the Numeric Data}
+\title{수치 데이터의 비닝}
 \usage{
 binning(
   x,
@@ -14,79 +14,68 @@ binning(
 )
 }
 \arguments{
-\item{x}{numeric. numeric vector for binning.}
+\item{x}{numeric. 비닝의 대상이 되는 수치 벡터}
 
-\item{nbins}{integer. number of intervals(bins). required. if missing, nclass.Sturges is used.}
+\item{nbins}{integer. 비닝할 빈(bin)의 개수. 필수 인수로 만약에 기술하지 않으면 nclass.Sturges의 결과가 사용됩니다.}
 
-\item{type}{character. binning method. Choose from "quantile", "equal", "equal", "pretty", "kmeans" and "bclust".
-The "quantile" sets breaks with quantiles of the same interval.
-The "equal" sets breaks at the same interval.
-The "pretty" chooses a number of breaks not necessarily equal
-to nbins using base::pretty function.
-The "kmeans" uses stats::kmeans function to generate the breaks.
-The "bclust" uses e1071::bclust function to generate the breaks using bagged clustering.
-"kmeans" and "bclust" was implemented by classInt::classIntervals() function.}
+\item{type}{character. 비닝 방법을 기술합니다. "quantile", "equal", "pretty", "kmeans", "bclust"에서 선택합니다.
+"quantile"는 동일한 분위수 구간의 브레이크포인트를 사용하여 비닝합니다.
+"equal"은 동일한 길이의 구간(interval)의 브레이크포인트를 사용하여 비닝합니다.
+"pretty"는 base::pretty() 함수를 활용하여 비닝합니다.
+"kmeans"는 stats::kmeans() 함수를 사용하여 k-mean 방법으로 비닝합니다.
+"bclust"는 e1071::bclust() 함수를 사용하여 bagged clustering 방법으로 비닝합니다.
+"kmeans"와 "bclust" 방법은 classInt::classIntervals() 함수를 사용하였습니다.}
 
-\item{ordered}{logical. whether to build an ordered factor or not.}
+\item{ordered}{logical. 비닝된 결과를 ordered factor로 생성할지의 여부}
 
-\item{labels}{character. the label names to use for each of the bins.}
+\item{labels}{character. 각 수준에 사용할 라벨 이름}
 
-\item{approxy.lab}{logical. If TRUE, large number breaks are approximated to pretty numbers.
-If FALSE, the original breaks obtained by type are used.}
+\item{approxy.lab}{logical. 큰 숫자의 프레이크포인트에 대해서 근사값의,
+좀더 예쁜 값의 라벨을 취할지의 여부를 선택합니다. TRUE일 경우에는 근사값으로,
+FALSE일 경우에는 원래의 값을 라벨로 사용합니다.}
 }
 \value{
-An object of bins class.
-Attributes of bins class is as follows.
+bins 클래스 객체.
+bins 클래스의 속성은 다음과 같습니다.
 \itemize{
-\item type : binning type, "quantile", "equal", "pretty", "kmeans", "bclust".
-\item breaks : the number of intervals into which x is to be cut.
-\item levels : levels of binned value.
-\item raw : raw data, numeric vector corresponding to x argument.
+\item class : "bins"
+\item type : 비닝 방법, "quantile", "equal", "pretty", "kmeans", "bclust".
+\item breaks : 수치 벡터가 절단된 구간의 브레이크 포인트
+\item levels : 비닝된 범주형 데이터의 수준
+\item raw : 비닝 되기 전의 원(raw) 데이터로서의 수치 벡터
 }
 }
 \description{
-The binning() converts a numeric variable to a categorization variable.
+binning()은 수치형 데이터를 비닝하여 범주형 데이터로 변환합니다.
 }
 \details{
-This function is useful when used with the mutate/transmute
-function of the dplyr package.
+이 함수는 dplyr 패키지의  mutate, 혹은 transmute 함수와 사용하면
+효율적으로 데이터를 비닝할 수 있습니다.
+
+비닝의 이해를 위해서 vignette("transformation") 명령어로 비네트를 참고 하세요.
 }
-\section{"bins" class attributes information}{
-
-Attributes of the "bins" class that is as follows.
-
-\itemize{
-\item class : "bins"
-\item levels : levels of factor or ordered factor
-\item type : binning method
-\item breaks : breaks for binning
-\item raw : raw data before binning
-}
-
-See vignette("transformation") for an introduction to these concepts.
-}
-
 \examples{
-# Generate data for the example
+# 예제를 위한 데이터 생성
 heartfailure2 <- heartfailure
 heartfailure2[sample(seq(NROW(heartfailure2)), 20), "platelets"] <- NA
 
-# Binning the carat variable. default type argument is "quantile"
+# type 인수의 기본값인 "quantile"을 이용한 platelets 변수의 비닝
 bin <- binning(heartfailure2$platelets)
-# Print bins class object
+# bins 클래스 객체의 출력
 bin
 
-# Summarise bins class object
+# bins 클래스 객체의 요약
 summary(bin)
 
 # Plot bins class object
 plot(bin)
 
-# Using labels argument
+# labels 인수를 이용한 사례
 bin <- binning(heartfailure2$platelets, nbins = 4,
               labels = c("LQ1", "UQ1", "LQ3", "UQ3"))
 bin
-# Using another type argument
+
+# 다른 인수를 이용한 사례들
 bin <- binning(heartfailure2$platelets, nbins = 5, type = "equal")
 bin
 bin <- binning(heartfailure2$platelets, nbins = 5, type = "pretty")
@@ -102,27 +91,27 @@ bin
 bin <- binning(x, approxy.lab = FALSE)
 bin
 
-# extract binned results
+# 비닝된 결과의 추출
 extract(bin)
 
-# -------------------------
-# Using pipes & dplyr
-# -------------------------
+# ------------------------------------
+# dplyr 패키지와 파이프를 이용한 사례
+# ------------------------------------
 library(dplyr)
 
-# Compare binned frequency by death_event
+# 비닝된 결과를 death_event 변수별로 돗수를 구함
 heartfailure2 \%>\%
  mutate(platelets_bin = binning(heartfailure2$platelets) \%>\%
-                     extract()) \%>\%
+          extract()) \%>\%
  group_by(death_event, platelets_bin) \%>\%
  summarise(freq = n()) \%>\%
  arrange(desc(freq)) \%>\%
  head(10)
 
- # Compare binned frequency by death_event using Viz
+ # 비닝된 결과를 death_event 변수별로 돗수 파악할 수 있는 시각화
  heartfailure2 \%>\%
    mutate(platelets_bin = binning(heartfailure2$platelets) \%>\%
-           extract()) \%>\%
+            extract()) \%>\%
    target_by(death_event) \%>\%
    relate(platelets_bin) \%>\%
    plot()

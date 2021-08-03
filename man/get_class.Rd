@@ -28,6 +28,7 @@ get_class(iris)
 # tbl_df
 get_class(ggplot2::diamonds)
 
+# with dplyr 
 library(dplyr)
 ggplot2::diamonds \%>\%
   get_class() \%>\% 
