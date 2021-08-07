@@ -16,9 +16,11 @@ binning(
 \arguments{
 \item{x}{numeric. 비닝의 대상이 되는 수치 벡터}
 
-\item{nbins}{integer. 비닝할 빈(bin)의 개수. 필수 인수로 만약에 기술하지 않으면 nclass.Sturges의 결과가 사용됩니다.}
+\item{nbins}{integer. 비닝할 빈(bin)의 개수. 필수 인수로 만약에 기술하지
+않으면 nclass.Sturges의 결과가 사용됩니다.}
 
-\item{type}{character. 비닝 방법을 기술합니다. "quantile", "equal", "pretty", "kmeans", "bclust"에서 선택합니다.
+\item{type}{character. 비닝 방법을 기술합니다. "quantile", "equal", "pretty",
+"kmeans", "bclust"에서 선택합니다.
 "quantile"는 동일한 분위수 구간의 브레이크포인트를 사용하여 비닝합니다.
 "equal"은 동일한 길이의 구간(interval)의 브레이크포인트를 사용하여 비닝합니다.
 "pretty"는 base::pretty() 함수를 활용하여 비닝합니다.
@@ -61,6 +63,7 @@ heartfailure2[sample(seq(NROW(heartfailure2)), 20), "platelets"] <- NA
 
 # type 인수의 기본값인 "quantile"을 이용한 platelets 변수의 비닝
 bin <- binning(heartfailure2$platelets)
+
 # bins 클래스 객체의 출력
 bin
 
@@ -118,6 +121,6 @@ heartfailure2 \%>\%
 
 }
 \seealso{
-\code{\link{binning_by}}, \code{\link{print.bins}}, \code{\link{summary.bins}},
-\code{\link{plot.bins}}.
+\code{\link{binning_by}}, \code{\link{print.bins}},
+\code{\link{summary.bins}}, \code{\link{plot.bins}}.
 }

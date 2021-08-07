@@ -41,6 +41,7 @@
 #'
 #' # type 인수의 기본값인 "quantile"을 이용한 platelets 변수의 비닝
 #' bin <- binning(heartfailure2$platelets)
+#' 
 #' # bins 클래스 객체의 출력
 #' bin
 #'
