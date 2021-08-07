@@ -1,0 +1,108 @@
+#' Binning the Numeric Data
+#'
+#' @description The binning() converts a numeric variable to a categorization variable.
+#'
+#' @details This function is useful when used with the mutate/transmute
+#' function of the dplyr package.
+#'
+#' See vignette("transformation") for an introduction to these concepts.
+#'
+#' @param x numeric. numeric vector for binning.
+#' @param nbins integer. number of intervals(bins). required. if missing, nclass.Sturges is used.
+#' @param type character. binning method. Choose from "quantile", "equal", "pretty", "kmeans" and "bclust".
+#' The "quantile" sets breaks with quantiles of the same interval.
+#' The "equal" sets breaks at the same interval.
+#' The "pretty" chooses a number of breaks not necessarily equal
+#' to nbins using base::pretty function.
+#' The "kmeans" uses stats::kmeans function to generate the breaks.
+#' The "bclust" uses e1071::bclust function to generate the breaks using bagged clustering.
+#' "kmeans" and "bclust" was implemented by classInt::classIntervals() function.
+#' @param ordered logical. whether to build an ordered factor or not.
+#' @param labels character. the label names to use for each of the bins.
+#' @param approxy.lab logical. If TRUE, large number breaks are approximated to pretty numbers. 
+#' If FALSE, the original breaks obtained by type are used.
+#' @return An object of bins class.
+#' Attributes of bins class is as follows.
+#' \itemize{
+#' \item class : "bins"
+#' \item type : binning type, "quantile", "equal", "pretty", "kmeans", "bclust".
+#' \item breaks : breaks for binning. the number of intervals into which x is to be cut.
+#' \item levels : levels of binned value.
+#' \item raw : raw data, numeric vector corresponding to x argument.
+#' }
+#' @seealso \code{\link{binning_by}}, \code{\link{print.bins}}, \code{\link{summary.bins}},
+#'  \code{\link{plot.bins}}.
+#' @export
+#' @examples
+#' # Generate data for the example
+#' heartfailure2 <- heartfailure
+#' heartfailure2[sample(seq(NROW(heartfailure2)), 20), "platelets"] <- NA
+#' 
+#' # Binning the platelets variable. default type argument is "quantile"
+#' bin <- binning(heartfailure2$platelets)
+#' # Print bins class object
+#' bin
+#' 
+#' # Summarise bins class object
+#' summary(bin)
+#' 
+#' # Plot bins class object
+#' plot(bin)
+#' 
+#' # Using labels argument
+#' bin <- binning(heartfailure2$platelets, nbins = 4,
+#'               labels = c("LQ1", "UQ1", "LQ3", "UQ3"))
+#' bin
+#' # Using another type argument
+#' bin <- binning(heartfailure2$platelets, nbins = 5, type = "equal")
+#' bin
+#' # bin <- binning(heartfailure2$platelets, nbins = 5, type = "pretty")
+#' # bin
+#' # bin <- binning(heartfailure2$platelets, nbins = 5, type = "kmeans")
+#' # bin
+#' # bin <- binning(heartfailure2$platelets, nbins = 5, type = "bclust")
+#' # bin
+#' 
+#' x <- sample(1:1000, size = 50) * 12345679
+#' bin <- binning(x)
+#' bin
+#' bin <- binning(x, approxy.lab = FALSE)
+#' bin
+#'
+#' # extract binned results
+#' extract(bin)
+#' 
+#' # -------------------------
+#' # Using pipes & dplyr
+#' # -------------------------
+#' library(dplyr)
+#'
+#' # Compare binned frequency by death_event
+#' heartfailure2 %>%
+#'  mutate(platelets_bin = binning(heartfailure2$platelets) %>% 
+#'                      extract()) %>%
+#'  group_by(death_event, platelets_bin) %>%
+#'  summarise(freq = n()) %>%
+#'  arrange(desc(freq)) %>%
+#'  head(10)
+#'  
+#'  # Compare binned frequency by death_event using Viz
+#'  heartfailure2 %>%
+#'    mutate(platelets_bin = binning(heartfailure2$platelets) %>% 
+#'            extract()) %>%
+#'    target_by(death_event) %>% 
+#'    relate(platelets_bin) %>% 
+#'    plot()
+#'  
+#' @import dlookr
+#' @name binning
+#' @usage 
+#' binning(
+#'   x,
+#'   nbins,
+#'   type = c("quantile", "equal", "pretty", "kmeans", "bclust"),
+#'   ordered = TRUE,
+#'   labels = NULL,
+#'   approxy.lab = TRUE
+#' )
+NULL
