@@ -1,1 +1,2 @@
 # kodlookr
+Korean dlookr package
