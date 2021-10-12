@@ -3,54 +3,54 @@
 \name{summary.bins}
 \alias{summary.bins}
 \alias{print.bins}
-\title{Summarizing Binned Variable}
+\title{비닝된 변수의 요약}
 \usage{
-## S3 method for class 'bins'
+## 'bins' 클래스 대상의 S3 메서드
 summary(object, ...)
 
-## S3 method for class 'bins'
+## 'bins' 클래스 대상의 S3 메서드
 print(object, ...)
 }
 \arguments{
-\item{object}{an object of "bins" and "optimal_bins",
-usually, a result of a call to binning().}
+\item{object}{"bins", "optimal_bins" 객체
+binning()을 호출했을 때 일반적인 결과입니다.}
 
-\item{x}{an object of class "bins" and "optimal_bins",
-usually, a result of a call to binning().}
+\item{x}{"bins"와 "optimal_bins" 객체 클래스
+binning()을 호출했을 때 일반적인 결과입니다.}
 
-\item{...}{further arguments passed to or from other methods.}
+\item{...}{다른 메서드에서 또는 다른 메서드로 전달되는 추가 인수}
 }
 \value{
-The function summary.bins() computes and returns a data.frame of summary statistics of the
-binned given in object. Variables of data frame is as follows.
+summary.bins() 함수는 계산하고 객체에 제공된 비닝된 요약 통계의
+data.frame을 반환합니다. 데이터 프레임의 변수는 다음과 같습니다.
 \itemize{
-\item levels : levels of factor.
-\item freq : frequency of levels.
-\item rate : relative frequency of levels. it is not percentage.
+\item levels : 요인의 수준
+\item freq : 요인의 빈도
+\item rate : 수준의 상대 빈도이며, 백분율이 아닙니다.
 }
 }
 \description{
-summary method for "bins" and "optimal_bins".
+"bins", "optimal_bins"을 대상으로 한 요약 방법
 }
 \details{
-print.bins() prints the information of "bins" and "optimal_bins" objects nicely.
-This includes frequency of bins, binned type, and number of bins.
-summary.bins() returns data.frame including frequency and relative frequency for each levels(bins).
+print.bins()는 "bins"와 "optimal_bins" 객체의 정보를 정확하게 출력합니다.
+이것은 bins의 빈도, 비닝된 타입, bins의 개수를 포함합니다.
+summary.bins()는 각 bins의 수준 빈도와 상대 빈도를 포함한 data.frame를 반환합니다.
 
-See vignette("transformation") for an introduction to these concepts.
+비닝의 이해를 위해서 vignette("transformation") 명령어로 비네트를 참고하세요.
 }
 \examples{
-# Generate data for the example
+# 예제를 위한 데이터 생성
 heartfailure2 <- heartfailure
 heartfailure2[sample(seq(NROW(heartfailure2)), 20), "platelets"] <- NA
 
-# Binning the platelets variable. default type argument is "quantile"
+# type 인수의 기본값인 "quantile"을 이용한 platelets 변수의 비닝
 bin <- binning(heartfailure2$platelets)
 
-# Print bins class object
+# bins 클래스 객체의 출력
 bin
 
-# Summarize bins class object
+# bins 클래스 객체의 요약
 summary(bin)
 }
 \seealso{
