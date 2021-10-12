@@ -14,7 +14,7 @@ NULL
 #' 이 함수는 소규모 데이터 보다는 대규모 데이터에 대한 EDA에 유용합니다.
 #' pdf 출력을 위해서는 한국어 관리 시스템에서 한국어 고딕 폰트를 설치해야 합니다.
 #'  
-#' @section Reported information:
+#' @section 생성된 정보:
 #' EDA 과정은 아래의 정보를 생성합니다:
 #' 
 #' \itemize{
