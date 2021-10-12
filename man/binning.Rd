@@ -57,28 +57,28 @@ binning()은 수치형 데이터를 비닝하여 범주형 데이터로 변환�
 비닝의 이해를 위해서 vignette("transformation") 명령어로 비네트를 참고 하세요.
 }
 \examples{
-# 예제를 위한 데이터 생성
+# <ec>삁<ec>젣瑜<bc> <ec>쐞<ed>븳 <eb>뜲<ec>씠<ed>꽣 <ec>깮<ec>꽦
 heartfailure2 <- heartfailure
 heartfailure2[sample(seq(NROW(heartfailure2)), 20), "platelets"] <- NA
 
-# type 인수의 기본값인 "quantile"을 이용한 platelets 변수의 비닝
+# type <ec>씤<ec>닔<ec>쓽 湲곕낯媛믪씤 "quantile"<ec>쓣 <ec>씠<ec>슜<ed>븳 platelets 蹂<ec>닔<ec>쓽 鍮꾨떇
 bin <- binning(heartfailure2$platelets)
 
-# bins 클래스 객체의 출력
+# bins <ed>겢<eb>옒<ec>뒪 媛앹껜<ec>쓽 異쒕젰
 bin
 
-# bins 클래스 객체의 요약
+# bins <ed>겢<eb>옒<ec>뒪 媛앹껜<ec>쓽 <ec>슂<ec>빟
 summary(bin)
 
 # Plot bins class object
 plot(bin)
 
-# labels 인수를 이용한 사례
+# labels <ec>씤<ec>닔瑜<bc> <ec>씠<ec>슜<ed>븳 <ec>궗濡
 bin <- binning(heartfailure2$platelets, nbins = 4,
               labels = c("LQ1", "UQ1", "LQ3", "UQ3"))
 bin
 
-# 다른 인수를 이용한 사례들
+# <eb>떎瑜<b8> <ec>씤<ec>닔瑜<bc> <ec>씠<ec>슜<ed>븳 <ec>궗濡<eb>뱾
 bin <- binning(heartfailure2$platelets, nbins = 5, type = "equal")
 bin
 bin <- binning(heartfailure2$platelets, nbins = 5, type = "pretty")
@@ -94,15 +94,15 @@ bin
 bin <- binning(x, approxy.lab = FALSE)
 bin
 
-# 비닝된 결과의 추출
+# 鍮꾨떇<eb>맂 寃곌낵<ec>쓽 異붿텧
 extract(bin)
 
 # ------------------------------------
-# dplyr 패키지와 파이프를 이용한 사례
+# dplyr <ed>뙣<ed>궎吏<ec><99> <ed>뙆<ec>씠<ed>봽瑜<bc> <ec>씠<ec>슜<ed>븳 <ec>궗濡
 # ------------------------------------
 library(dplyr)
 
-# 비닝된 결과를 death_event 변수별로 돗수를 구함
+# 鍮꾨떇<eb>맂 寃곌낵瑜<bc> death_event 蹂<ec>닔蹂꾨줈 <eb>룛<ec>닔瑜<bc> 援ы븿
 heartfailure2 \%>\%
  mutate(platelets_bin = binning(heartfailure2$platelets) \%>\%
           extract()) \%>\%
@@ -111,7 +111,7 @@ heartfailure2 \%>\%
  arrange(desc(freq)) \%>\%
  head(10)
 
- # 비닝된 결과를 death_event 변수별로 돗수 파악할 수 있는 시각화
+ # 鍮꾨떇<eb>맂 寃곌낵瑜<bc> death_event 蹂<ec>닔蹂꾨줈 <eb>룛<ec>닔 <ed>뙆<ec>븙<ed>븷 <ec>닔 <ec>엳<eb>뒗 <ec>떆媛곹솕
  heartfailure2 \%>\%
    mutate(platelets_bin = binning(heartfailure2$platelets) \%>\%
             extract()) \%>\%
