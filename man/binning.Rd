@@ -16,8 +16,8 @@ binning(
 \arguments{
 \item{x}{numeric. 비닝의 대상이 되는 수치 벡터}
 
-\item{nbins}{integer. 비닝할 빈(bin)의 개수. 필수 인수로 만약에 기술하지
-않으면 nclass.Sturges의 결과가 사용됩니다.}
+\item{nbins}{integer. 비닝할 빈(bin)의 개수. 필수 인수로 만약에 기술하지 않으면
+nclass.Sturges의 결과가 사용됩니다.}
 
 \item{type}{character. 비닝 방법을 기술합니다. "quantile", "equal", "pretty",
 "kmeans", "bclust"에서 선택합니다.
@@ -42,7 +42,7 @@ bins 클래스의 속성은 다음과 같습니다.
 \itemize{
 \item class : "bins"
 \item type : 비닝 방법, "quantile", "equal", "pretty", "kmeans", "bclust".
-\item breaks : 수치 벡터가 절단된 구간의 브레이크 포인트
+\item breaks : 비닝의 브레이크 포인트로, x의 간격을 정합니다.
 \item levels : 비닝된 범주형 데이터의 수준
 \item raw : 비닝 되기 전의 원(raw) 데이터로서의 수치 벡터
 }
@@ -51,7 +51,7 @@ bins 클래스의 속성은 다음과 같습니다.
 binning()은 수치형 데이터를 비닝하여 범주형 데이터로 변환합니다.
 }
 \details{
-이 함수는 dplyr 패키지의  mutate, 혹은 transmute 함수와 사용하면
+이 함수는 dplyr 패키지의 mutate, 혹은 transmute 함수와 사용하면
 효율적으로 데이터를 비닝할 수 있습니다.
 
 비닝의 이해를 위해서 vignette("transformation") 명령어로 비네트를 참고하세요.
@@ -111,7 +111,7 @@ heartfailure2 \%>\%
  arrange(desc(freq)) \%>\%
  head(10)
 
- # 비닝된 결과를 death_event 변수별로 돗수 파악할 수 있는 시각화
+ # 비닝된 결과를 death_event 변수별로 도수를 파악할 수 있는 시각화
  heartfailure2 \%>\%
    mutate(platelets_bin = binning(heartfailure2$platelets) \%>\%
             extract()) \%>\%

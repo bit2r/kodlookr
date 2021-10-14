@@ -2,90 +2,91 @@
 % Please edit documentation in R/binning.R
 \name{performance_bin}
 \alias{performance_bin}
-\title{Diagnose Performance Binned Variable}
+\title{비닝된 변수의 성능 진단}
 \usage{
 performance_bin(y, x, na.rm = FALSE)
 }
 \arguments{
-\item{y}{character or numeric, integer, factor. a binary response variable (0, 1).
-The variable must contain only the integers 0 and 1 as element.
-However, in the case of factor/character having two levels, it is performed while type conversion is performed in the calculation process.}
+\item{y}{문자 또는 숫자, 정수, 인수. 이진 응답 변수(0, 1)
+변수는 0과 1의 요소만을 포함해야 합니다.
+단, 2개의 수준을 가진 요소의 경우, 계산 과정에서 타입 변환이 수행됩니다.}
 
-\item{x}{integer or factor, character. At least 2 different values. and Inf is not allowed.}
+\item{x}{정수 또는 인수, 문자. 최소 2개의 다른 값이어야 하며,
+Inf는 허용되지 않습니다.}
 
-\item{na.rm}{logical. a logical indicating whether missing values should be removed.}
+\item{na.rm}{logical. 결측값을 제거해야 하는지 여부를 나타내는 논리값}
 }
 \value{
-an object of "performance_bin" class. vaue of data.frame is as follows.
+"performance_bin" 클래스 객체. data.frame의 값은 다음과 같습니다.
 \itemize{
 \item Bin : character. bins.
-\item CntRec : integer. frequency by bins.
-\item CntPos : integer. frequency of positive  by bins.
-\item CntNeg : integer. frequency of negative  by bins.
-\item CntCumPos : integer. cumulate frequency of positive  by bins.
-\item CntCumNeg : integer. cumulate frequency of negative  by bins.
-\item RatePos : integer. relative frequency of positive  by bins.
-\item RateNeg : integer. relative frequency of negative  by bins.
-\item RateCumPos : numeric. cumulate relative frequency of positive  by bins.
-\item RateCumNeg : numeric. cumulate relative frequency of negative  by bins.
-\item Odds : numeric. odd ratio.
-\item LnOdds : numeric. loged odd ratio.
-\item WoE : numeric. weight of evidence.
-\item IV : numeric. Jeffrey's Information Value.
-\item JSD : numeric. Jensen-Shannon Divergence.
-\item AUC : numeric. AUC. area under curve.
+\item CntRec : integer. 빈(bins)별 빈도
+\item CntPos : integer. 빈(bins)별 양(positive)의 빈도
+\item CntNeg : integer. 빈(bins)별 음(negative)의 빈도
+\item CntCumPos : integer. 빈별 양의 누적 빈도
+\item CntCumNeg : integer. 빈별 음의 누적 빈도
+\item RatePos : integer. 빈별 양의 상대 빈도
+\item RateNeg : integer. 빈별 음의 상대 빈도
+\item RateCumPos : numeric. 빈별 양의 누적 상대 빈도
+\item RateCumNeg : numeric. 빈별 음의 누적 상대 빈도
+\item Odds : numeric. 오즈비(Odds Ratio)
+\item LnOdds : numeric. 로그화된 오즈비
+\item WoE : numeric. WoE(Weight of Evidence)
+\item IV : numeric. 제프리(Jeffrey)의 정보 가치
+\item JSD : numeric. 젠슨-샤논(Jensen-Shannon) 발산
+\item AUC : numeric. AUC(Area Under Curve;곡선 아래 면적)
 }
-Attributes of "performance_bin" class is as follows.
+"performance_bin" 클래스의 속성은 다음과 같습니다.
 \itemize{
-\item names : character. variable name of data.frame with "Binning Table".
-\item class : character. name of class. "performance_bin" "data.frame".
-\item row.names : character. row name of data.frame with "Binning Table".
-\item IV : numeric. Jeffrey's Information Value.
-\item JSD : numeric. Jensen-Shannon Divergence.
-\item KS : numeric. Kolmogorov-Smirnov Statistics.
-\item gini : numeric. Gini index.
-\item HHI : numeric. Herfindahl-Hirschman Index.
-\item HHI_norm : numeric.normalized Herfindahl-Hirschman Index.
-\item Cramer_V : numeric. Cramer's V Statistics.
-\item chisq_test : data.frame. table of significance tests. name is as follows.
+\item names : character. "Binning Table"이 있는 data.frame의 변수 이름
+\item class : character. 클래스 이름("performance_bin", "data.frame")
+\item row.names : character. "Binning Table"이 있는 data.frame의 행 이름
+\item IV : numeric. 제프리(Jeffrey)의 정보 가치
+\item JSD : numeric. 젠슨-샤논(Jensen-Shannon) 발산
+\item KS : numeric. 콜모고로프-스미르노프(Kolmogorov-Smirnov) 통계량
+\item gini : numeric. 지니 계수
+\item HHI : numeric. 허핀달-허쉬만(Herfindahl-Hirschman) 지수
+\item HHI_norm : numeric.정규화된 허핀달-허쉬만(Herfindahl-Hirschman) 지수
+\item Cramer_V : numeric. 크래머(Cramer)의 V 통계량
+\item chisq_test : data.frame. 유의성 검정 표. 이름은 다음과 같습니다.
 \itemize{
-\item Bin A : character. first bins.
-\item Bin B : character. second bins.
-\item statistics : numeric. statistics of Chi-square test.
-\item p_value : numeric. p-value of Chi-square test.
+\item Bin A : character. 첫 번째 빈(bins)
+\item Bin B : character. 두 번째 빈(bins)
+\item statistics : numeric. 카이제곱 검정의 통계
+\item p_value : numeric. 카이제곱 검정의 유의 확률(p-value)
 }
 }
 }
 \description{
-The performance_bin() calculates metrics to evaluate the performance of binned variable for
-binomial classification model.
+performance_bin()은 이항 분류 모델에 대한 비닝된 변수의 성능을
+평가하기 위해 메트릭을 계산합니다.
 }
 \details{
-This function is useful when used with the mutate/transmute
-function of the dplyr package.
+이 함수는 dplyr 패키지의 mutate, 혹은 transmute 함수와 사용하면
+효율적으로 데이터를 비닝할 수 있습니다.
 }
 \examples{
-# Generate data for the example
+# 예제를 위한 데이터 생성
 heartfailure2 <- heartfailure
 
 set.seed(123)
 heartfailure2[sample(seq(NROW(heartfailure2)), 5), "creatinine"] <- NA
 
-# Change the target variable to 0(negative) and 1(positive).
+# 타깃 변수를 0(음)과 1(양)로 변경
 heartfailure2$death_event_2 <- ifelse(heartfailure2$death_event \%in\% "Yes", 1, 0)
 
-# Binnig from creatinine to platelets_bin.
+# creatinine에서 platelets_bin으로 비닝
 breaks <- c(0,  1,  2, 10)
 heartfailure2$creatinine_bin <- cut(heartfailure2$creatinine, breaks)
 
-# Diagnose performance binned variable
+# 비닝된 변수의 성능 진단
 perf <- performance_bin(heartfailure2$death_event_2, heartfailure2$creatinine_bin)
 perf
 summary(perf)
 
 # plot(perf)
 
-# Diagnose performance binned variable without NA
+# 비닝된 변수의 성능 진단 (NA 제외)
 perf <- performance_bin(heartfailure2$death_event_2, heartfailure2$creatinine_bin, na.rm = TRUE)
 perf
 summary(perf)

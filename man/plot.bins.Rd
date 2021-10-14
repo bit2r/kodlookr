@@ -2,34 +2,36 @@
 % Please edit documentation in R/binning.R
 \name{plot.bins}
 \alias{plot.bins}
-\title{Visualize Distribution for a "bins" object}
+\title{"bins" 객체의 분포 시각화}
 \usage{
-## S3 method for class 'bins'
+## 'bins' 클래스 대상의 S3 메서드
 plot(x, typographic = TRUE, ...)
 }
 \arguments{
-\item{x}{an object of class "bins", usually, a result of a call to binning().}
+\item{x}{"bins" 클래스의 객체로 binning()을 호출했을 때의 일반적인 결과입니다.}
 
-\item{typographic}{logical. Whether to apply focuses on typographic elements to ggplot2 visualization.
-The default is TRUE. if TRUE provides a base theme that focuses on typographic elements using hrbrthemes package.}
+\item{typographic}{logical. 적용 여부는 ggplot2 시각화에서 타이포 그래픽 요소의
+중점에 따라 변경됩니다.
+기본값은 TRUE 입니다. 값이 TRUE이면 hrbrthemes 패키지를 사용한 타이포 그래픽 요소에
+중점을 둔 기본 테마를 제공합니다.}
 
-\item{...}{arguments to be passed to methods, such as graphical parameters (see par).}
+\item{...}{그래픽 매개변수와 같이 메소드에 전달되는 인수(파라미터 참고)}
 }
 \description{
-Visualize two plots on a single screen.
-The plot at the top is a histogram representing the frequency of the level.
-The plot at the bottom is a bar chart representing the frequency of the level.
+단일 화면에서 두 개의 플롯을 시각화합니다.
+상단의 플롯은 수준의 빈도를 나타내는 히스토그램입니다.
+하단의 플롯은 수준의 빈도를 나타내는 막대 차트입니다.
 }
 \examples{
-# Generate data for the example
+# 예제를 위한 데이터 생성
 heartfailure2 <- heartfailure
 heartfailure2[sample(seq(NROW(heartfailure2)), 20), "platelets"] <- NA
 
-# Binning the platelets variable. default type argument is "quantile"
+# type 인수의 기본값인  "quantile"을 이용한 platelets 변수의 비닝
 bin <- binning(heartfailure2$platelets, nbins = 5)
 plot(bin)
 
-# Using another type arguments
+# 다른 타입의 인수 사용
 bin <- binning(heartfailure2$platelets, nbins = 5, type = "equal")
 plot(bin)
 

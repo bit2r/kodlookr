@@ -12,17 +12,17 @@ summary(object, ...)
 print(object, ...)
 }
 \arguments{
-\item{object}{"bins", "optimal_bins" 객체
-binning()을 호출했을 때 일반적인 결과입니다.}
+\item{object}{"bins", "optimal_bins" 객체로,
+binning()을 호출했을 때의 일반적인 결과}
 
-\item{x}{"bins"와 "optimal_bins" 객체 클래스
-binning()을 호출했을 때 일반적인 결과입니다.}
+\item{x}{"bins"와 "optimal_bins" 클래스 객체로,
+binning()을 호출했을 때의 일반적인 결과}
 
 \item{...}{다른 메서드에서 또는 다른 메서드로 전달되는 추가 인수}
 }
 \value{
-summary.bins() 함수는 계산하고 객체에 제공된 비닝된 요약 통계의
-data.frame을 반환합니다. 데이터 프레임의 변수는 다음과 같습니다.
+summary.bins() 함수는 객체에 제공된 비닝된 요약 통계를 계산하고
+data.frame 형태로 반환합니다. 데이터 프레임의 변수는 다음과 같습니다.
 \itemize{
 \item levels : 요인의 수준
 \item freq : 요인의 빈도
@@ -34,7 +34,7 @@ data.frame을 반환합니다. 데이터 프레임의 변수는 다음과 같습
 }
 \details{
 print.bins()는 "bins"와 "optimal_bins" 객체의 정보를 정확하게 출력합니다.
-이것은 bins의 빈도, 비닝된 타입, bins의 개수를 포함합니다.
+이것은 bins의 빈도, 비닝의 방법, bins의 개수를 포함합니다.
 summary.bins()는 각 bins의 수준 빈도와 상대 빈도를 포함한 data.frame를 반환합니다.
 
 비닝의 이해를 위해서 vignette("transformation") 명령어로 비네트를 참고하세요.

@@ -2,66 +2,67 @@
 % Please edit documentation in R/binning.R
 \name{summary.performance_bin}
 \alias{summary.performance_bin}
-\title{Summarizing Performance for Binned Variable}
+\title{비닝된 변수의 성능 요약}
 \usage{
-## S3 method for class 'performance_bin'
+## 'performance_bin' 클래스 대상의 S3 메서드
 summary(object, ...)
 }
 \arguments{
-\item{object}{an object of class "performance_bin", usually, a result of a call to performance_bin().}
+\item{object}{"performance_bin" 클래스 객체로,
+performance_bin()을 호출했을 때의 일반적인 결과}
 
-\item{...}{further arguments to be passed from or to other methods.}
+\item{...}{다른 메서드에서 또는 다른 메서드로 전달되는 추가 인수}
 }
 \value{
 NULL.
 }
 \description{
-summary method for "performance_bin". summary metrics to evaluate the performance
-of binomial classification model.
+"performance_bin"에 대한 요약 방법으로 이항 분류 모델의 성능을
+평가하기 위한 요약 메트릭.
 }
 \details{
-print() to print only binning table information of "performance_bin" objects.
-summary.performance_bin() includes general metrics and result of significance tests life follows.:
+print()는 "performance_bin" 객체의 비닝 테이블 정보만을 출력합니다.
+summary.performance_bin() 일반 메트릭 및 유의성 검정을 따른 결과를 포함합니다.:
 \itemize{
-\item Binning Table : Metrics by bins.
+\item Binning Table : 빈(bins)별 메트릭
 \itemize{
 \item CntRec, CntPos, CntNeg, RatePos, RateNeg, Odds, WoE, IV, JSD, AUC.
 }
-\item General Metrics.
+\item 일반 메트릭
 \itemize{
-\item Gini index.
-\item Jeffrey's Information Value.
-\item Jensen-Shannon Divergence.
-\item Kolmogorov-Smirnov Statistics.
-\item Herfindahl-Hirschman Index.
-\item normalized Herfindahl-Hirschman Index.
-\item Cramer's V Statistics.
+\item 지니 계수
+\item 제프리(Jeffrey)의 정보 가치
+\item 젠슨-샤논(Jensen-Shannon) 발산
+\item 콜모고로프-스미르노프(Kolmogorov-Smirnov) 통계량
+\item 허핀달-허쉬만(Herfindahl-Hirschman) 지수
+\item 정규화된 허핀달-허쉬만(Herfindahl-Hirschman) 지수
+\item 크래머(Cramer)의 V 통계량
 }
-\item Table of Significance Tests.
+\item 유의성 검정 표
 }
 }
 \examples{
-# Generate data for the example
+# 예제를 위한 데이터 생성
 heartfailure2 <- heartfailure
 
 set.seed(123)
 heartfailure2[sample(seq(NROW(heartfailure2)), 5), "creatinine"] <- NA
 
-# Change the target variable to 0(negative) and 1(positive).
+# 타깃 변수를 0(음)과 1(양)로 변경
 heartfailure2$death_event_2 <- ifelse(heartfailure2$death_event \%in\% "Yes", 1, 0)
 
-# Binnig from creatinine to platelets_bin.
+# creatinine에서 platelets_bin으로 비닝
 breaks <- c(0,  1,  2, 10)
 heartfailure2$creatinine_bin <- cut(heartfailure2$creatinine, breaks)
 
-# Diagnose performance binned variable
+# 비닝된 변수의 성능 진단
 perf <- performance_bin(heartfailure2$death_event_2, heartfailure2$creatinine_bin)
 perf
 summary(perf)
 
 # plot(perf)
 
-# Diagnose performance binned variable without NA
+# 비닝된 변수의 성능 진단 (NA 제외)
 perf <- performance_bin(heartfailure2$death_event_2, heartfailure2$creatinine_bin, na.rm = TRUE)
 perf
 summary(perf)

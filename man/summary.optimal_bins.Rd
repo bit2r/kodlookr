@@ -2,71 +2,72 @@
 % Please edit documentation in R/binning.R
 \name{summary.optimal_bins}
 \alias{summary.optimal_bins}
-\title{Summarizing Performance for Optimal Bins}
+\title{최적 비닝의 성능 요약}
 \usage{
-## S3 method for class 'optimal_bins'
+## 'optimal_bins' 클래스 대상의 S3 메서드
 summary(object, ...)
 }
 \arguments{
-\item{object}{an object of class "optimal_bins", usually, a result of a call to binning_by().}
+\item{object}{"optimal_bins" 클래스 객체로,
+binning_by()을 호출했을 때의 일반적인 결과}
 
-\item{...}{further arguments to be passed from or to other methods.}
+\item{...}{다른 메서드에서 또는 다른 메서드로 전달되는 추가 인수}
 }
 \value{
 NULL.
 }
 \description{
-summary method for "optimal_bins". summary metrics to evaluate the performance
-of binomial classification model.
+"optimal_bins"에 대한 요약 방법. 이항 분류 모델의 성능을 평가하기
+위한 요약 메트릭
 }
 \details{
-print() to print only binning table information of "optimal_bins" objects.
-summary.performance_bin() includes general metrics and result of significance tests life follows.:
+print()는 "optimal_bins" 객체의 비닝 테이블 정보만을 출력합니다.
+summary.performance_bin()은 일반 메트릭 및 유의성 검정을 따른 결과를 포함합니다.:
 \itemize{
-\item Binning Table : Metrics by bins.
+\item Binning Table : 빈(bin)별 메트릭
 \itemize{
 \item CntRec, CntPos, CntNeg, RatePos, RateNeg, Odds, WoE, IV, JSD, AUC.
 }
-\item General Metrics.
+\item 일반 메트릭
 \itemize{
-\item Gini index.
-\item Jeffrey's Information Value.
-\item Jensen-Shannon Divergence.
-\item Kolmogorov-Smirnov Statistics.
-\item Herfindahl-Hirschman Index.
-\item normalized Herfindahl-Hirschman Index.
-\item Cramer's V Statistics.
+\item 지니 계수
+\item 제프리(Jeffrey)의 정보 가치
+\item 젠슨-샤논(Jensen-Shannon) 발산
+\item 콜모고로프-스미르노프(Kolmogorov-Smirnov) 통계량
+\item 허핀달-허쉬만(Herfindahl-Hirschman) 지수
+\item 정규화된 허핀달-허쉬만(Herfindahl-Hirschman) 지수
+\item 크래머(Cramer)의 V 통계량
 }
-\item Table of Significance Tests.
+\item 유의성 검정 표
 }
 }
 \examples{
 library(dplyr)
 
-# Generate data for the example
+# 예제를 위한 데이터 생성
 heartfailure2 <- heartfailure
 heartfailure2[sample(seq(NROW(heartfailure2)), 5), "creatinine"] <- NA
 
-# optimal binning
+# 최적 비닝
 bin <- binning_by(heartfailure2, "death_event", "creatinine")
 bin
 
-# summary optimal_bins class
+# optimal_bins 클래스의 요약
 summary(bin)
 
-# performance table
+# 성능 테이블
 attr(bin, "performance")
 
-# visualize all information for optimal_bins class
+# optimal_bins 클래스의 모든 정보 시각화
 plot(bin)
 
-# visualize WoE information for optimal_bins class
+# optimal_bins 클래스의 WoE 정보 시각화
 plot(bin, type = "WoE")
 
-# visualize all information without typographic
+# optimal_bins 클래스의 모든 정보 시각화(타이포 그래픽 제외)
 plot(bin, typographic = FALSE)
 
-# extract binned results
+# 비닝된 결과의 추출
 extract(bin) \%>\%
   head(20)
 

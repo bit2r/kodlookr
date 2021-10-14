@@ -3,39 +3,39 @@
 \name{extract}
 \alias{extract}
 \alias{extract.bins}
-\title{Extract bins from "bins"}
+\title{"bins"에서 빈(bin) 추출}
 \usage{
 extract(x)
 
-## S3 method for class 'bins'
+## 'bins' 클래스 대상의 S3 메서드
 extract(x)
 }
 \arguments{
-\item{x}{a bins class or optimal_bins class.}
+\item{x}{bins 클래스나(or) optimal_bins 클래스}
 }
 \value{
 factor.
 }
 \description{
-The extract() extract binned variable from "bins", "optimal_bins" class object.
+extract()는 "bins", "optimal_bins" 클래스 객체에서
+비닝된 변수를 추출합니다.
 }
 \details{
-The "bins" and "optimal_bins" class objects use the summary() and plot() functions to diagnose
-the performance of binned results. This function is used to extract the binned result if you are satisfied
-with the result.
+"bins"와 "optimal_bins" 클래스 객체는 summary(), plot() 함수를 사용하여
+비닝된 결과의 성능을 진단합니다. 이 함수는 비닝된 결과를 추출하는데 사용됩니다.
 }
 \examples{
 library(dplyr)
 
-# Generate data for the example
+# 예제를 위한 데이터 생성
 heartfailure2 <- heartfailure
 heartfailure2[sample(seq(NROW(heartfailure2)), 5), "creatinine"] <- NA
 
-# optimal binning using binning_by()
+# binning_by()을 이용한 최적 비닝
 bin <- binning_by(heartfailure2, "death_event", "creatinine")
 bin
 
-# extract binning result
+# 비닝된 결과의 추출
 extract(bin) \%>\%
   head(20)
 
