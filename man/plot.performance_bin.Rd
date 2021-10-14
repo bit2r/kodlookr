@@ -2,44 +2,47 @@
 % Please edit documentation in R/binning.R
 \name{plot.performance_bin}
 \alias{plot.performance_bin}
-\title{Visualize Performance for an "performance_bin" Object}
+\title{"performance_bin" 객체에 대한 성능 시각화}
 \usage{
-## S3 method for class 'performance_bin'
+## 'performance_bin' 클래스 대상의 S3 메서드
 plot(x, typographic = TRUE, ...)
 }
 \arguments{
-\item{x}{an object of class "performance_bin", usually, a result of a call to performance_bin().}
+\item{x}{"performance_bin" 클래스 객체로,
+performance_bin()을 호출했을 때의 일반적인 결과}
 
-\item{typographic}{logical. Whether to apply focuses on typographic elements to ggplot2 visualization.
-The default is TRUE. if TRUE provides a base theme that focuses on typographic elements using hrbrthemes package.}
+\item{typographic}{logical. 적용 여부는 ggplot2 시각화에서 타이포 그래픽 요소의
+중점에 따라 변경됩니다.
+기본값은 TRUE 입니다. 값이 TRUE이면 hrbrthemes 패키지를 사용한 타이포그래픽 요소에
+중점을 둔 기본 테마를 제공합니다.}
 
-\item{...}{further arguments to be passed from or to other methods.}
+\item{...}{다른 메서드에서 또는 다른 메서드로 전달되는 추가 인수}
 }
 \description{
-It generates plots for understand frequency, WoE by bins using performance_bin.
+performance_bin을 사용하여 빈별 빈도와 WoE를 이해하기 위해 플롯을 생성합니다.
 }
 \examples{
-# Generate data for the example
+# 예제를 위한 데이터 생성
 heartfailure2 <- heartfailure
 
 set.seed(123)
 heartfailure2[sample(seq(NROW(heartfailure2)), 5), "creatinine"] <- NA
 
-# Change the target variable to 0(negative) and 1(positive).
+# 타깃 변수를 0(음)과 1(양)로 변경
 heartfailure2$death_event_2 <- ifelse(heartfailure2$death_event \%in\% "Yes", 1, 0)
 
-# Binnig from creatinine to platelets_bin.
+# creatinine에서 platelets_bin으로 비닝
 breaks <- c(0,  1,  2, 10)
 heartfailure2$creatinine_bin <- cut(heartfailure2$creatinine, breaks)
 
-# Diagnose performance binned variable
+# 비닝된 변수의 성능 진단
 perf <- performance_bin(heartfailure2$death_event_2, heartfailure2$creatinine_bin)
 perf
 summary(perf)
 
 plot(perf)
 
-# Diagnose performance binned variable without NA
+# 비닝된 변수의 성능 진단 (NA 제외)
 perf <- performance_bin(heartfailure2$death_event_2, heartfailure2$creatinine_bin, na.rm = TRUE)
 perf
 summary(perf)

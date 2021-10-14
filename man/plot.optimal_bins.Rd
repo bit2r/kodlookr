@@ -2,9 +2,9 @@
 % Please edit documentation in R/binning.R
 \name{plot.optimal_bins}
 \alias{plot.optimal_bins}
-\title{Visualize Distribution for an "optimal_bins" Object}
+\title{"optimal_bins" 객체의 분포 시각화}
 \usage{
-## S3 method for class 'optimal_bins'
+## 'optimal_bins' 클래스 대상의 S3 메서드
 plot(
   x,
   type = c("all", "dist", "freq", "posrate", "WoE"),
@@ -14,47 +14,50 @@ plot(
 )
 }
 \arguments{
-\item{x}{an object of class "optimal_bins", usually, a result of a call to binning_by().}
+\item{x}{"optimal_bins" 클래스 객체로,
+binning_by()을 호출했을 때의 일반적인 결과입니다.}
 
-\item{type}{character. options for visualization. Distribution ("dist"), Relateive Frequency ("freq"),
-Positive Rate ("posrate"), and Weight of Evidence ("WoE"). and default "all" draw all plot.}
+\item{type}{character. 시각화 옵션으로 분포는 ("dist"), 상대 빈도는 ("freq"),
+양성 비율은 ("posrate"), WoE는 ("WoE")로 지정합니다. 기본값은 "all" 입니다.}
 
-\item{typographic}{logical. Whether to apply focuses on typographic elements to ggplot2 visualization.
-The default is TRUE. if TRUE provides a base theme that focuses on typographic elements using hrbrthemes package.}
+\item{typographic}{logical. 적용 여부는 ggplot2 시각화에서 타이포 그래픽 요소의
+중점에 따라 변경됩니다.
+기본값은 TRUE 입니다. 값이 TRUE이면 hrbrthemes 패키지를 사용한 타이포 그래픽
+요소에 중점을 둔 기본 테마를 제공합니다.}
 
-\item{rotate_angle}{integer. specifies the rotation angle of the x-axis label.
-This is useful when the x-axis labels are long and overlap.
-The default is 0 to not rotate the label.}
+\item{rotate_angle}{integer. x축 레이블의 회적 각도를 지정합니다.
+이것은 x축 레이블이 길어 겹칠 때 유용합니다.
+기본값은 0으로 레이블이 회전하지 않습니다.}
 
-\item{...}{further arguments to be passed from or to other methods.}
+\item{...}{다른 메서드에서 또는 다른 메서드로 전달되는 추가 인수}
 }
 \description{
-It generates plots for understand distribution, frequency, bad rate, and weight of evidence using optimal_bins.
+optimal_bins를 사용해 분포, 빈도, 불량률 및 WoE를 이해하기 위한 플롯을 생성합니다.
 
-See vignette("transformation") for an introduction to these concepts.
+비닝의 이해를 위해서 vignette("transformation") 명령어로 비네트를 참고하세요.
 }
 \examples{
-# Generate data for the example
+# 예제를 위한 데이터 생성
 heartfailure2 <- heartfailure
 heartfailure2[sample(seq(NROW(heartfailure2)), 5), "creatinine"] <- NA
 
-# optimal binning using binning_by()
+# binning_by()을 이용한 최적 비닝
 bin <- binning_by(heartfailure2, "death_event", "creatinine")
 bin
 
-# summary optimal_bins class.
+# optimal_bins 클래스의 요약
 summary(bin)
 
-# visualize all information for optimal_bins class
+# optimal_bins 클래스의 모든 정보 시각화
 plot(bin)
 
-# rotate the x-axis labels by 45 degrees so that they do not overlap.
+# x축 레이블이 겹치지 않도록 45도 회전
 plot(bin, rotate_angle = 45)
 
-# visualize WoE information for optimal_bins class
+# optimal_bins 클래스의 WoE 정보 시각화
 plot(bin, type = "WoE")
 
-# visualize all information with typographic
+# optimal_bins 클래스의 모든 정보 시각화(타이포 그래픽 제외)
 plot(bin)
 
 }

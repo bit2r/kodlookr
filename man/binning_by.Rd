@@ -2,97 +2,98 @@
 % Please edit documentation in R/binning.R
 \name{binning_by}
 \alias{binning_by}
-\title{Optimal Binning for Scoring Modeling}
+\title{스코어링 모델링을 대상으로 한 최적 비닝}
 \usage{
 binning_by(.data, y, x, p = 0.05, ordered = TRUE, labels = NULL)
 }
 \arguments{
-\item{.data}{a data frame.}
+\item{.data}{데이터 프레임}
 
-\item{y}{character. name of binary response variable(0, 1).
-The variable must contain only the integers 0 and 1 as element.
-However, in the case of factor having two levels, it is performed while type conversion is performed in the calculation process.}
+\item{y}{character. 이진 응답 변수(0, 1)의 이름
+변수는 0과 1의 요소만을 포함해야 합니다.
+단, 2개의 수준을 가진 요소의 경우, 계산 과정에서 타입 변환이 수행됩니다.}
 
-\item{x}{character. name of continuous characteristic variable. At least 5 different values. and Inf is not allowed.}
+\item{x}{character. 연속형 변수의 이름. 최소 5개의 다른 값이어야 하며,
+Inf는 허용되지 않습니다.}
 
-\item{p}{numeric. percentage of records per bin. Default 5\\\% (0.05).
-This parameter only accepts values greater that 0.00 (0\\\%) and lower than 0.50 (50\\\%).}
+\item{p}{numeric. 빈(bin)당 레코드 비율. 기본값은 5\\\% (0.05).
+이 매개변수는 0.00 (0\\\%)보다 크고 0.50 (50\\\%)보다 작은 값만 허용합니다.}
 
-\item{ordered}{logical. whether to build an ordered factor or not.}
+\item{ordered}{logical. 비닝된 결과를 ordered factor로 생성할지의 여부}
 
-\item{labels}{character. the label names to use for each of the bins.}
+\item{labels}{character. 각 수준에 사용할 라벨 이름}
 }
 \value{
-an object of "optimal_bins" class.
-Attributes of "optimal_bins" class is as follows.
+"optimal_bins" 클래스 객체
+"optimal_bins" 클래스의 속성은 다음과 같습니다.
 \itemize{
 \item class : "optimal_bins".
-\item type : binning type, "optimal".
-\item breaks : numeric. the number of intervals into which x is to be cut.
-\item levels : character. levels of binned value.
-\item raw : numeric. raw data, x argument value.
-\item ivtable : data.frame. information value table.
-\item iv : numeric. information value.
-\item target : integer. binary response variable.
+\item type : 비닝 방법, "optimal".
+\item breaks : numeric. 비닝의 브레이크 포인트로, x의 간격을 정합니다.
+\item levels : character. 비닝된 범주형 데이터의 수준
+\item raw : numeric. 비닝 되기 전의 원(raw) 데이터로서의 수치 벡터
+\item ivtable : data.frame. 값 정보 테이블
+\item iv : numeric. 값 정보
+\item target : integer. 이진 응답 변수
 }
 }
 \description{
-The binning_by() finding intervals for numerical variable
-using optical binning. Optimal binning categorizes a numeric characteristic
-into bins for ulterior usage in scoring modeling.
+binning_by()는 최적 비닝을 사용하여 수치형 변수의 동일한 길이의
+구간(interval)을 찾습니다.
+최적 비닝은 스코어링 모델링의 이면적 사용을 위해 수치형 변수를 bins로 범주화합니다.
 }
 \details{
-This function is useful when used with the mutate/transmute
-function of the dplyr package. And this function is implemented using
-smbinning() function of smbinning package.
+이 함수는 dplyr 패키지의 mutate, 혹은 transmute 함수와 사용하면
+효율적으로 데이터를 비닝할 수 있습니다.
+또한 이 함수는 smbinning 패키지의 smbinning() 함수를 사용하여 실행됩니다.
 }
-\section{attributes of "optimal_bins" class}{
+\section{"optimal_bins" 클래스의 속성}{
 
-Attributes of the "optimal_bins" class that is as follows.
+"optimal_bins" 클래스의 속성은 다음과 같습니다.
 \itemize{
 \item class : "optimal_bins".
-\item levels : character. factor or ordered factor levels
-\item type : character. binning method
-\item breaks : numeric. breaks for binning
-\item raw : numeric. before the binned the raw data
-\item ivtable : data.frame. information value table
-\item iv : numeric. information value
-\item target : integer. binary response variable
+\item levels : character. 요인 또는 정렬된 요인 수준
+\item type : character. 비닝 방법
+\item breaks : numeric. 비닝의 브레이크포인트
+\item raw : numeric. 비닝 되기 전의 원(raw) 데이터
+\item ivtable : data.frame. 값 정보 테이블
+\item iv : numeric. 값 정보
+\item target : integer. 이진 응답 변수
 }
 
-See vignette("transformation") for an introduction to these concepts.
+비닝의 이해를 위해서 vignette("transformation") 명령어로 비네트를 참고하세요.
 }
 
 \examples{
 library(dplyr)
 
-# Generate data for the example
+# 예제를 위한 데이터 생성
 heartfailure2 <- heartfailure
 heartfailure2[sample(seq(NROW(heartfailure2)), 5), "creatinine"] <- NA
 
-# optimal binning using character
+# 문자를 사용한 최적 비닝
 bin <- binning_by(heartfailure2, "death_event", "creatinine")
 
-# optimal binning using name
+# 이름을 사용한 최적 비닝
 bin <- binning_by(heartfailure2, death_event, creatinine)
 bin
 
-# performance table
+# 성능 테이블
 attr(bin, "performance")
 
-# summary optimal_bins class
+# optimal_bins 클래스의 요약
 summary(bin)
 
-# visualize all information for optimal_bins class
+# optimal_bins 클래스의 모든 정보 시각화
 plot(bin)
 
-# visualize WoE information for optimal_bins class
+# optimal_bins 클래스의 WoE 정보 시각화
 plot(bin, type = "WoE")
 
-# visualize all information without typographic
+# optimal_bins 클래스의 모든 정보 시각화(타이포 그래픽 제외)
 plot(bin, typographic = FALSE)
 
-# extract binned results
+# 비닝된 결과의 추출
 extract(bin) \%>\%
   head(20)
 
