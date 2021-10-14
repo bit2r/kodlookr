@@ -54,7 +54,7 @@ binning()은 수치형 데이터를 비닝하여 범주형 데이터로 변환�
 이 함수는 dplyr 패키지의  mutate, 혹은 transmute 함수와 사용하면
 효율적으로 데이터를 비닝할 수 있습니다.
 
-비닝의 이해를 위해서 vignette("transformation") 명령어로 비네트를 참고 하세요.
+비닝의 이해를 위해서 vignette("transformation") 명령어로 비네트를 참고하세요.
 }
 \examples{
 # 예제를 위한 데이터 생성
@@ -70,7 +70,7 @@ bin
 # bins 클래스 객체의 요약
 summary(bin)
 
-# Plot bins class object
+# bins 클래스 객체의 시각화
 plot(bin)
 
 # labels 인수를 이용한 사례
